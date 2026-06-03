@@ -258,3 +258,12 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python,macos,windows
 
+.vscode
+cache/
+data/raw/
+data/processed/pes_filled
+data/processed/pes_joined
+data/processed/map_matching
+*.gpkg-shm
+*.gpkg-wal
+*.qgz
