@@ -34,9 +34,9 @@ def main():
     gdf = gdf[gdf["Etat"] != "Hors Plan Vélo (Embellir)"]
     gdf = gdf.rename({"Rue ou axe": "street", "Niveau": "level"}, axis=1)
     # Merge status columns
-    gdf["constructed"] = gdf.apply(merge_status_cols, axis=1)
+    gdf["built_in"] = gdf.apply(merge_status_cols, axis=1)
     gdf["level"] = gdf["level"].map(LEVEL_MAP)
-    gdf = gdf[["street", "level", "constructed", "geometry"]]
+    gdf = gdf[["street", "level", "built_in", "geometry"]]
     gdf.to_file(FOLDEROOT + "pes_cleaned.gpkg")
 
 

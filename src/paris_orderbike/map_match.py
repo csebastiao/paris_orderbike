@@ -31,7 +31,7 @@ def _get_angle(linestring1, linestring2):
     arr2 = np.array(linestring2.coords)
     arr2 = arr2[1] - arr2[0]
 
-    angle = np.math.atan2(np.linalg.det([arr1, arr2]), np.dot(arr1, arr2))
+    angle = np.atan2(np.linalg.det([arr1, arr2]), np.dot(arr1, arr2))
     angle_deg = abs(np.degrees(angle))
 
     if angle_deg > 90:

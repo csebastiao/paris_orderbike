@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Match the OSM data with the data from Paris en Selle. Based on https://github.com/anerv/BikeDNA/blob/main/scripts/COMPARE/3b_extrinsic_analysis_feature_matching.ipynb.
+Match the OSM data with the data from Paris en Selle. Reusing https://github.com/anerv/BikeDNA/blob/main/scripts/COMPARE/3b_extrinsic_analysis_feature_matching.ipynb.
 """
 
 import os
 import geopandas as gpd
-import pickle
+import pandas as pd
 import paris_orderbike.map_match as match_func
 
 FOLDER_IN = "./data/raw/"
@@ -16,8 +16,10 @@ CRS_PARIS = "epsg:27571"
 def main():
     osm_edges_simplified = gpd.read_file(FOLDER_IN + "osm/paris_edges.gpkg")
     osm_edges_simplified = osm_edges_simplified.to_crs(CRS_PARIS)
+    osm_edges_simplified["edge_id"] = osm_edges_simplified.reset_index().index
     ref_edges_simplified = gpd.read_file(FOLDER_OUT + "pes_cleaned.gpkg")
     ref_edges_simplified = ref_edges_simplified.to_crs(CRS_PARIS)
+    ref_edges_simplified["edge_id"] = ref_edges_simplified.reset_index().index
     folderpath = FOLDER_OUT + "map_matching/"
     if not os.path.exists(folderpath):
         os.makedirs(folderpath)
@@ -61,10 +63,6 @@ def main():
         osm_segments.to_file(osm_seg_fp)
         ref_segments.to_file(ref_seg_fp)
         print("Segments saved!")
-    matches_fp = (
-        folderpath
-        + f"segment_matches_{buffer_dist}_{hausdorff_threshold}_{angular_threshold}.pickle"
-    )
     print(
         f"Starting matching process using a buffer distance of {buffer_dist} meters, a Hausdorff distance of {hausdorff_threshold} meters, and a max angle of {angular_threshold} degrees."
     )
@@ -86,9 +84,23 @@ def main():
         hausdorff_threshold=hausdorff_threshold,
     )
     print("Feature matching completed!")
-    with open(matches_fp, "wb") as f:
-        pickle.dump(segment_matches, f)
-    segment_matches.to_file(matches_fp)
+    segment_matches.to_file(
+        folderpath
+        + f"segment_matches_{buffer_dist}_{hausdorff_threshold}_{angular_threshold}.gpkg"
+    )
+    # Join the two datasets, keeping only OSM geometry
+    gdf_joined = pd.merge(
+        segment_matches,
+        osm_segments,
+        left_on="matches_id",
+        right_on="seg_id",
+        how="left",
+    )
+    gdf_joined = gdf_joined[
+        ["street", "level", "built_in", "osmid", "highway", "geometry_y"]
+    ]
+    gdf_joined = gdf_joined.rename({"geometry_y": "geometry"}, axis=1)
+    gdf_joined.to_file(folderpath + "pes_to_osm_raw.gpkg")
 
 
 if __name__ == "__main__":
