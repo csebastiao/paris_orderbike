@@ -5,7 +5,6 @@ Match the OSM data with the data from Paris en Selle. Reusing https://github.com
 
 import os
 import geopandas as gpd
-import pandas as pd
 import paris_orderbike.map_match as match_func
 
 FOLDER_IN = "./data/raw/"
@@ -14,18 +13,18 @@ CRS_PARIS = "epsg:27571"
 
 
 def main():
-    osm_edges_simplified = gpd.read_file(FOLDER_IN + "osm/paris_edges.gpkg")
+    osm_edges_simplified = gpd.read_file(FOLDER_IN + "osm/paris_edges_filt.gpkg")
     osm_edges_simplified = osm_edges_simplified.to_crs(CRS_PARIS)
     osm_edges_simplified["edge_id"] = osm_edges_simplified.reset_index().index
-    ref_edges_simplified = gpd.read_file(FOLDER_OUT + "pes_cleaned.gpkg")
+    ref_edges_simplified = gpd.read_file(FOLDER_OUT + "pes_filtered.gpkg")
     ref_edges_simplified = ref_edges_simplified.to_crs(CRS_PARIS)
     ref_edges_simplified["edge_id"] = ref_edges_simplified.reset_index().index
-    folderpath = FOLDER_OUT + "map_matching/"
+    folderpath = FOLDER_OUT + "map_matching_filt/"
     if not os.path.exists(folderpath):
         os.makedirs(folderpath)
     # Define feature matching user settings
     segment_length = 10  # The shorter the segments, the longer the matching process will take. For cities with a gridded street network with streets as straight lines, longer segments will usually work fine
-    buffer_dist = 15
+    buffer_dist = 20
     hausdorff_threshold = 17
     angular_threshold = 30
     for s in [segment_length, buffer_dist, hausdorff_threshold, angular_threshold]:
@@ -88,19 +87,6 @@ def main():
         folderpath
         + f"segment_matches_{buffer_dist}_{hausdorff_threshold}_{angular_threshold}.gpkg"
     )
-    # Join the two datasets, keeping only OSM geometry
-    gdf_joined = pd.merge(
-        segment_matches,
-        osm_segments,
-        left_on="matches_id",
-        right_on="seg_id",
-        how="left",
-    )
-    gdf_joined = gdf_joined[
-        ["street", "level", "built_in", "osmid", "highway", "geometry_y"]
-    ]
-    gdf_joined = gdf_joined.rename({"geometry_y": "geometry"}, axis=1)
-    gdf_joined.to_file(folderpath + "pes_to_osm_raw.gpkg")
 
 
 if __name__ == "__main__":
