@@ -35,7 +35,8 @@ def main():
     )
     gdf_ls = gdf_ls[["street", "level", "built_in", "highway", "osmid", "geometry"]]
     # Remove duplicate linestrings
-    gdf_ls = gdf_ls.drop_duplicates()
+    gdf_ls["geometry"] = gdf_ls.normalize()
+    gdf_ls = gdf_ls.drop_duplicates(subset=["level", "built_in", "highway", "geometry"])
     gdf_ls.to_file(FOLDEROOT + "pes_to_osm_raw.gpkg")
 
 
