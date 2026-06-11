@@ -19,13 +19,11 @@ class Orderbike:
         keep_connected=True,
         seed=None,
     ):
-        self.G = G
+        self.G = G.copy()
         self.gdf_edges = mp.nx_to_gdf(self.G, points=False, lines=True)
         self.preset = preset
         self.preset_dict = self._add_preset_dict()
-        self.prec_func, self.main_func, self.upda_func, self.type_func = (
-            self._use_preset()
-        )
+        self.main_func, self.upda_func, self.type_func = self._use_preset()
         self.buff_size = buff_size
         self.seed = seed
         self.random_generator = np.random.default_rng(seed=self.seed)
@@ -98,7 +96,6 @@ class Orderbike:
             )
         else:
             return (
-                self.preset_dict[self.preset]["prec_func"],
                 self.preset_dict[self.preset]["main_func"],
                 self.preset_dict[self.preset]["upda_func"],
                 self.preset_dict[self.preset]["type_func"],
@@ -106,7 +103,7 @@ class Orderbike:
 
     def _build_graph(self):
         "Use the built argument to initialize the graph with only a specific set of edges."
-        self.G_init = self.gdf_edges[self.gdf_edges["built"] == 1].index()
+        return self.gdf_edges[self.gdf_edges["built"] == 1].index()
 
     def _init_graph(self):
         "Initialize the graph with the edge of highest average closeness centrality."
@@ -114,15 +111,15 @@ class Orderbike:
         edge_closeness = {
             edge: (closeness[edge[0]] + closeness[edge[1]]) / 2 for edge in self.G.edges
         }
-        self.G_init = self.G.edge_subgraph(
+        return self.G.edge_subgraph(
             [tuple(max(edge_closeness, key=edge_closeness.get))]
         )
 
     def _compute_metrics(self):
         self.directness = directness(self.G_actual)
-        self.xx = self.actual_buff_geom["length"].sum()
+        self.xx = sum([self.G_actual.edges[e]["length"] for e in self.edges_actual])
         self.actual_area = self.actual_buff_geom.union_all().area
-        cc = nx.connected_components(self.G_actual)
+        cc = list(nx.connected_components(self.G_actual))
         self.num_cc = len(cc)
         self.length_lcc = max(
             [
@@ -136,7 +133,7 @@ class Orderbike:
             ]
         )
         self.metrics_dict["directness"].append(self.directness)
-        self.metrics_dict["coverage"].append(self.coverage)
+        self.metrics_dict["coverage"].append(self.actual_area)
         self.metrics_dict["xx"].append(self.xx)
         self.metrics_dict["num_cc"].append(self.num_cc)
         self.metrics_dict["length_lcc"].append(self.length_lcc)
@@ -188,17 +185,18 @@ class Orderbike:
     def _static_growth(self):
         "Grow the network using a static metric, following the order for each valid edge."
         self.growth_order = []
-        self.edges_tested, self.values_found = self.main_func()
-        self.values_found = np.array(self.values_found)
-        for i in range(self.num_step):
+        res = self.main_func()
+        self.edges_tested = list(res.keys())
+        self.values_found = np.array(list(res.values()))
+        for _ in range(self.num_step):
             self.valid_edges = self._find_valid_edges()
             choice = self._find_highest_rank()
             self.growth_order.append(choice)
             self.edges_actual.append(choice)
             self.G_actual = self.G.edge_subgraph(self.edges_actual)
-            self.actual_buff_geom[choice] = self.G.edges[choice]["geometry"].buffer(
-                self.buff_size
-            )
+            self.actual_buff_geom.loc[len(self.actual_buff_geom) + 1] = self.G.edges[
+                choice
+            ]["geometry"].buffer(self.buff_size)
             self._compute_metrics()
         self.grown = True
 
@@ -216,17 +214,22 @@ class Orderbike:
         return [edge for edge in self.G.edges if edge not in self.G_actual.edges]
 
     def _find_highest_rank(self):
-        for edge, idx in enumerate(self.edges_tested):
+        for idx, edge in enumerate(self.edges_tested):
             if edge in self.valid_edges:
                 value = self.values_found[idx]
                 if len(np.where(self.values_found == value)[0]) > 1:
-                    return self.random_generator.choice(
-                        self.values_found[np.where(self.values_found == value)[0]]
-                    )
+                    cand = [
+                        self.edges_tested[pos]
+                        for pos in np.where(self.values_found == value)[0]
+                    ]
+                    return cand[self.random_generator.choice(len(cand))]
                 return edge
 
     def get_metrics_dict(self):
         return self.metrics_dict
+
+    def get_growth_order(self):
+        return self.growth_order
 
     def main_directness(self):
         return directness(self.G_tested)
@@ -253,7 +256,7 @@ class Orderbike:
                 key=lambda x: x[1],
                 reverse=True,
             )
-        }.items()
+        }
 
     def main_closeness(self):
         nclo = nx.closeness_centrality(self.G, distance="length")
@@ -264,9 +267,9 @@ class Orderbike:
                 key=lambda x: x[1],
                 reverse=True,
             )
-        }.items()
+        }
 
     def main_random(self):
         edgelist = list(self.G.edges)
         self.random_generator.shuffle(edgelist)
-        return {key: -idx for key, idx in enumerate(edgelist)}.items()
+        return {key: -idx for idx, key in enumerate(edgelist)}
