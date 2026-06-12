@@ -9,22 +9,7 @@ import pandas as pd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 import numpy as np
-
-
-FOLDER_DATA = "./data/processed/"
-FOLDER_PLOT = "./plots/"
-TIMESTAMPS = [
-    "2021-01-01",
-    "2023-05-17",
-    "2023-10-01",
-    "2024-01-15",
-    "2024-04-04",
-    "2024-08-22",
-    "2024-12-22",
-    "2025-06-02",
-    "2026-01-28",
-    "No",
-]
+from I_plot_lineplot import FOLDER_DATA, FOLDER_PLOT
 
 
 def main():

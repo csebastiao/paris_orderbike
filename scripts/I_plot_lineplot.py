@@ -8,24 +8,10 @@ import json
 import pandas as pd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
-
+from G_grow_bikenet import BUFF_SIZE, NUM_HIER_TRIAL, NUM_RAND_TRIAL
 
 FOLDER_DATA = "./data/processed/"
 FOLDER_PLOT = "./plots/"
-RAND_TRIAL_NUMBER = 500
-BUFF_SIZE = 400
-TIMESTAMPS = [
-    "2021-01-01",
-    "2023-05-17",
-    "2023-10-01",
-    "2024-01-15",
-    "2024-04-04",
-    "2024-08-22",
-    "2024-12-22",
-    "2025-06-02",
-    "2026-01-28",
-    "No",
-]
 
 
 def main():
@@ -39,10 +25,14 @@ def main():
     avg = {}
     for met in plot_params["order"]:
         foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{met}/"
-        if met == "random":
+        if met in ["random", "road_hierarchy", "bikenet_hierarchy"]:
             df_concat = pd.DataFrame()
-            for i in range(RAND_TRIAL_NUMBER):
-                df = pd.read_json(foldermet + f"random_{i:03}/metrics_growth.json")
+            if met == "random":
+                num_step = NUM_RAND_TRIAL
+            elif met in ["road_hierarchy", "bikenet_hierarchy"]:
+                num_step = NUM_HIER_TRIAL
+            for i in range(num_step):
+                df = pd.read_json(foldermet + f"{met}_{i:03}/metrics_growth.json")
                 df_concat = pd.concat([df_concat, df])
             df_avg = pd.DataFrame(average_x(df_concat))
         else:

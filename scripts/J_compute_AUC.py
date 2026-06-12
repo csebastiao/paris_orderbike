@@ -6,29 +6,16 @@ Script to compute the Area Under the Curve of all metrics for all strategies for
 import json
 import pandas as pd
 from paris_orderbike.utils import auc_from_metrics_dict
+from G_grow_bikenet import BUFF_SIZE, NUM_HIER_TRIAL, NUM_RAND_TRIAL
+from I_plot_lineplot import FOLDER_DATA
 
-
-FOLDER_DATA = "./data/processed/"
-FOLDER_PLOT = "./plots/"
-TIMESTAMPS = [
-    "2021-01-01",
-    "2023-05-17",
-    "2023-10-01",
-    "2024-01-15",
-    "2024-04-04",
-    "2024-08-22",
-    "2024-12-22",
-    "2025-06-02",
-    "2026-01-28",
-    "No",
-]
-RAND_TRIAL_NUMBER = 500
-BUFF_SIZE = 400
 METRIC_LIST = [
     "coverage",
     "directness",
     "betweenness",
+    "dual_betweenness",
     "closeness",
+    "dual_closeness",
     "random",
     "road_hierarchy",
     "bikenet_hierarchy",
@@ -39,11 +26,15 @@ EXP_DISC = False
 
 def main():
     aucs = []
-    for metric in METRIC_LIST:
-        foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{metric}/"
-        if metric == "random":
-            for i in range(RAND_TRIAL_NUMBER):
-                with open(foldermet + f"random_{i:03}/metrics_growth.json", "r") as f:
+    for met in METRIC_LIST:
+        foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{met}/"
+        if met in ["random", "road_hierarchy", "bikenet_hierarchy"]:
+            if met == "random":
+                num_step = NUM_RAND_TRIAL
+            elif met in ["road_hierarchy", "bikenet_hierarchy"]:
+                num_step = NUM_HIER_TRIAL
+            for i in range(num_step):
+                with open(foldermet + f"{met}_{i:03}/metrics_growth.json", "r") as f:
                     met_dict = json.load(f)
                 auc_cov = auc_from_metrics_dict(
                     met_dict,
@@ -61,7 +52,7 @@ def main():
                     exp_discounting=EXP_DISC,
                     normalize_max_auc=False,
                 )
-                aucs.append([metric, i, auc_cov, auc_dir])
+                aucs.append([met, i, auc_cov, auc_dir])
         else:
             with open(foldermet + "metrics_growth.json", "r") as f:
                 met_dict = json.load(f)
@@ -81,7 +72,7 @@ def main():
                 exp_discounting=EXP_DISC,
                 normalize_max_auc=False,
             )
-            aucs.append([metric, 0, auc_cov, auc_dir])
+            aucs.append([met, 0, auc_cov, auc_dir])
         # Save everything as JSON with Pandas Dataframe
         df_growth = pd.DataFrame(
             aucs,

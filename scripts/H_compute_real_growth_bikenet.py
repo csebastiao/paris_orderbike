@@ -8,10 +8,10 @@ import json
 import networkx as nx
 import geopandas as gpd
 import momepy as mp
+from G_grow_bikenet import BUFF_SIZE
 from paris_orderbike.metrics import directness, coverage
 
 
-BUFF_SIZE = 400
 FOLDEROOT = "./data/processed/"
 TIMESTAMPS = [
     "2021-01-01",

@@ -40,6 +40,7 @@ class Orderbike:
         ).buffer(buff_size)
         self.max_area = self.gdf_edges.buffer(buff_size).union_all().area
         self.num_step = len(self.G.edges) - len(self.G_init.edges)
+        self.hierarchy_level = 0
         self.directness = 0
         self.xx = 0
         self.num_cc = 0
@@ -76,8 +77,18 @@ class Orderbike:
                 "upda_func": None,
                 "type_func": "static",
             },
+            "dual_betweenness": {
+                "main_func": self.main_dual_betweenness,
+                "upda_func": None,
+                "type_func": "static",
+            },
             "closeness": {
                 "main_func": self.main_closeness,
+                "upda_func": None,
+                "type_func": "static",
+            },
+            "dual_closeness": {
+                "main_func": self.main_dual_closeness,
                 "upda_func": None,
                 "type_func": "static",
             },
@@ -85,6 +96,11 @@ class Orderbike:
                 "main_func": self.main_hierarchy,
                 "upda_func": None,
                 "type_func": "static",
+            },
+            "hierarchy_coverage": {
+                "main_func": self.main_hierarchy_coverage,
+                "upda_func": self.upda_coverage,
+                "type_func": "dynamic",
             },
             "random": {
                 "main_func": self.main_random,
@@ -113,8 +129,9 @@ class Orderbike:
     def _init_graph(self, preset):
         "Initialize the graph with the edge of highest average closeness centrality."
         closeness = nx.closeness_centrality(self.G, distance="length")
-        if preset == "hierarchy":
+        if preset in ["hierarchy", "hierarchy_coverage"]:
             max_hierarchy = self.gdf_edges["hierarchy"].max()
+            self.hierarchy_level = max_hierarchy
             edge_closeness = {
                 edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
                 for edge in self.G.edges
@@ -248,15 +265,14 @@ class Orderbike:
 
     def main_coverage(self):
         if self.keep_searching:
-            edge = self.edges_tested[0]
+            edge = self.edges_tested[-1]
             geom_test = self.actual_buff_geom.copy()
-            geom_test.loc[len(self.actual_buff_geom) + 1] = self.G.edges[edge][
-                "geometry"
-            ].buffer(self.buff_size)
+            geom_test.loc[len(geom_test) + 1] = self.G.edges[edge]["geometry"].buffer(
+                self.buff_size
+            )
             test_area = geom_test.geometry.union_all().area
             return (test_area - self.actual_area) / self.G.edges[edge]["length"]
-        else:
-            return 0
+        return 0
 
     def upda_coverage(self):
         if self.actual_area == self.max_area:
@@ -267,6 +283,30 @@ class Orderbike:
             key: val
             for key, val in sorted(
                 nx.edge_betweenness_centrality(self.G, weight="length").items(),
+                key=lambda x: x[1],
+                reverse=True,
+            )
+        }
+
+    def main_dual_betweenness(self):
+        # FIXME random order currently
+        edge_mapping = {idx: edge for idx, edge in enumerate(self.G.edges)}
+        coins = mp.COINS(self.gdf_edges)
+        G_dual = mp.coins_to_nx(coins)
+        nx.set_node_attributes(
+            G_dual,
+            dict(nx.betweenness_centrality(G_dual)),
+            "stroke_betweenness",
+        )
+        strokes, _ = mp.nx_to_gdf(G_dual)
+        strokes = strokes.explode("edge_indices")
+        strokes["edge_indices"] = strokes["edge_indices"].map(edge_mapping)
+        return {
+            key: val
+            for key, val in sorted(
+                strokes.set_index("edge_indices")["stroke_betweenness"]
+                .to_dict()
+                .items(),
                 key=lambda x: x[1],
                 reverse=True,
             )
@@ -283,8 +323,53 @@ class Orderbike:
             )
         }
 
+    def main_dual_closeness(self):
+        # FIXME random order currently
+        edge_mapping = {idx: edge for idx, edge in enumerate(self.G.edges)}
+        coins = mp.COINS(self.gdf_edges)
+        G_dual = mp.coins_to_nx(coins)
+        nx.set_node_attributes(
+            G_dual,
+            dict(nx.closeness_centrality(G_dual)),
+            "stroke_closeness",
+        )
+        strokes, _ = mp.nx_to_gdf(G_dual)
+        strokes = strokes.explode("edge_indices")
+        strokes["edge_indices"] = strokes["edge_indices"].map(edge_mapping)
+        return {
+            key: val
+            for key, val in sorted(
+                strokes.set_index("edge_indices")["stroke_closeness"].to_dict().items(),
+                key=lambda x: x[1],
+                reverse=True,
+            )
+        }
+
     def main_hierarchy(self):
-        return {edge: self.G.edges[edge]["hierarchy"] for edge in self.G.edges}
+        return {
+            key: val
+            for key, val in sorted(
+                {
+                    edge: self.G.edges[edge]["hierarchy"] for edge in self.G.edges
+                }.items(),
+                key=lambda x: x[1],
+                reverse=True,
+            )
+        }
+
+    def main_hierarchy_coverage(self):
+        edge = self.edges_tested[-1]
+        if self.G.edges[edge]["hierarchy"] < self.hierarchy_level:
+            return 0
+        else:
+            if self.keep_searching:
+                geom_test = self.actual_buff_geom.copy()
+                geom_test.loc[len(geom_test) + 1] = self.G.edges[edge][
+                    "geometry"
+                ].buffer(self.buff_size)
+                test_area = geom_test.geometry.union_all().area
+                return (test_area - self.actual_area) / self.G.edges[edge]["length"]
+            return 1
 
     def main_random(self):
         edgelist = list(self.G.edges)

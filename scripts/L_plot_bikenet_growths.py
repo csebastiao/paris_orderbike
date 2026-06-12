@@ -8,9 +8,9 @@ import networkx as nx
 import geopandas as gpd
 import momepy as mp
 from paris_orderbike.plot import plot_growth, plot_graph
+from G_grow_bikenet import BUFF_SIZE
+from I_plot_lineplot import FOLDER_DATA, FOLDER_PLOT
 
-FOLDER_DATA = "./data/processed/"
-FOLDER_PLOT = "./plots/"
 TIMESTAMPS = [
     "2021-01-01",
     "2023-05-17",
@@ -23,15 +23,16 @@ TIMESTAMPS = [
     "2026-01-28",
     "No",
 ]
-BUFF_SIZE = 400
 BUFFER = True
 PLOT_METRICS = False
 DPI = 100  # Larger means bigger files and longer to save, and there are a lot of pictures so quickly taking space and time
 MET_LIST = [
     # "coverage",
-    "directness",
-    "betweenness",
-    "closeness",
+    # "directness",
+    # "betweenness",
+    # "dual_betweenness",
+    # "closeness",
+    # "dual_closeness",
     "road_hierarchy",
     "bikenet_hierarchy",
 ]
@@ -53,7 +54,9 @@ def main():
             os.makedirs(foldermetplot)
         with open(foldermet + "order_growth.json") as f:
             order_growth = json.load(f)
-        order_growth = [tuple(val) for val in order_growth]
+        order_growth = [
+            tuple((tuple(val[0]), tuple(val[1]), val[2])) for val in order_growth
+        ]
         with open(foldermet + "metrics_growth.json") as f:
             metrics_dict = json.load(f)
         plot_growth(
@@ -107,7 +110,7 @@ def main():
     )
     for idx, t in enumerate(TIMESTAMPS[:-1]):
         H = G.edge_subgraph(
-            [e for e in G.edges if G.edges[e]["built"] in TIMESTAMPS[: idx + 1]]
+            [e for e in G.edges if G.edges[e]["built_in"] in TIMESTAMPS[: idx + 1]]
         )
         plot_graph(
             H,
