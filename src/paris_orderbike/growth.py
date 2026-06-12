@@ -32,7 +32,7 @@ class Orderbike:
         if self.built:
             self.G_init = self._build_graph()
         else:
-            self.G_init = self._init_graph()
+            self.G_init = self._init_graph(preset)
         self.G_actual = self.G_init.copy()
         self.edges_actual = list(self.G_actual.edges)
         self.actual_buff_geom = mp.nx_to_gdf(
@@ -81,6 +81,11 @@ class Orderbike:
                 "upda_func": None,
                 "type_func": "static",
             },
+            "hierarchy": {
+                "main_func": self.main_hierarchy,
+                "upda_func": None,
+                "type_func": "static",
+            },
             "random": {
                 "main_func": self.main_random,
                 "upda_func": None,
@@ -105,12 +110,21 @@ class Orderbike:
         "Use the built argument to initialize the graph with only a specific set of edges."
         return self.gdf_edges[self.gdf_edges["built"] == 1].index()
 
-    def _init_graph(self):
+    def _init_graph(self, preset):
         "Initialize the graph with the edge of highest average closeness centrality."
         closeness = nx.closeness_centrality(self.G, distance="length")
-        edge_closeness = {
-            edge: (closeness[edge[0]] + closeness[edge[1]]) / 2 for edge in self.G.edges
-        }
+        if preset == "hierarchy":
+            max_hierarchy = self.gdf_edges["hierarchy"].max()
+            edge_closeness = {
+                edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
+                for edge in self.G.edges
+                if self.G.edges[edge]["hierarchy"] == max_hierarchy
+            }
+        else:
+            edge_closeness = {
+                edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
+                for edge in self.G.edges
+            }
         return self.G.edge_subgraph(
             [tuple(max(edge_closeness, key=edge_closeness.get))]
         )
@@ -152,20 +166,15 @@ class Orderbike:
     def _dynamic_growth(self):
         "Grow the network using a dynamic metric, recomputing metrics at each step for each valid edge."
         self.growth_order = []
-        for i in range(self.num_step):
+        for _ in range(self.num_step):
+            self.edges_tested = []
+            self.values_found = []
             self.valid_edges = self._find_valid_edges()
             for edge in self.valid_edges:
                 self.edges_tested.append(edge)
                 self.G_tested = self.G.edge_subgraph(self.edges_actual + [edge])
                 self.values_found.append(self.main_func())
-            choice = self._find_optimal_edge()
-            self.growth_order.append(choice)
-            self.edges_actual.append(choice)
-            self.G_actual = self.G.edge_subgraph(self.edges_actual)
-            self.actual_buff_geom[choice] = self.G.edges[choice]["geometry"].buffer(
-                self.buff_size
-            )
-            self._compute_metrics()
+            self._update_status(self._find_optimal_edge())
             if self.upda_func is not None:
                 self.upda_func()
         self.grown = True
@@ -179,7 +188,7 @@ class Orderbike:
         # When more than one optimal value, return a random value from all the optimal ones
         if len(optimum) > 1:
             # Need to change to list with built-in function to avoid numpy int type for values, and then to tuple for the list
-            return tuple(self.random_generator.choice(optimum).tolist())
+            return optimum[self.random_generator.choice(len(optimum))]
         return optimum[0]
 
     def _static_growth(self):
@@ -190,14 +199,7 @@ class Orderbike:
         self.values_found = np.array(list(res.values()))
         for _ in range(self.num_step):
             self.valid_edges = self._find_valid_edges()
-            choice = self._find_highest_rank()
-            self.growth_order.append(choice)
-            self.edges_actual.append(choice)
-            self.G_actual = self.G.edge_subgraph(self.edges_actual)
-            self.actual_buff_geom.loc[len(self.actual_buff_geom) + 1] = self.G.edges[
-                choice
-            ]["geometry"].buffer(self.buff_size)
-            self._compute_metrics()
+            self._update_status(self._find_highest_rank())
         self.grown = True
 
     def _find_valid_edges(self):
@@ -221,9 +223,19 @@ class Orderbike:
                     cand = [
                         self.edges_tested[pos]
                         for pos in np.where(self.values_found == value)[0]
+                        if self.edges_tested[pos] in self.valid_edges
                     ]
                     return cand[self.random_generator.choice(len(cand))]
                 return edge
+
+    def _update_status(self, choice):
+        self.growth_order.append(choice)
+        self.edges_actual.append(choice)
+        self.G_actual = self.G.edge_subgraph(self.edges_actual)
+        self.actual_buff_geom.loc[len(self.actual_buff_geom) + 1] = self.G.edges[
+            choice
+        ]["geometry"].buffer(self.buff_size)
+        self._compute_metrics()
 
     def get_metrics_dict(self):
         return self.metrics_dict
@@ -238,8 +250,10 @@ class Orderbike:
         if self.keep_searching:
             edge = self.edges_tested[0]
             geom_test = self.actual_buff_geom.copy()
-            geom_test[edge] = self.G.edges[edge]["geometry"].buffer(self.buff_size)
-            test_area = geom_test.union_all().area
+            geom_test.loc[len(self.actual_buff_geom) + 1] = self.G.edges[edge][
+                "geometry"
+            ].buffer(self.buff_size)
+            test_area = geom_test.geometry.union_all().area
             return (test_area - self.actual_area) / self.G.edges[edge]["length"]
         else:
             return 0
@@ -268,6 +282,9 @@ class Orderbike:
                 reverse=True,
             )
         }
+
+    def main_hierarchy(self):
+        return {edge: self.G.edges[edge]["hierarchy"] for edge in self.G.edges}
 
     def main_random(self):
         edgelist = list(self.G.edges)

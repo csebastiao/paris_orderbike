@@ -11,25 +11,36 @@ import os
 
 FOLDEROOT = "./data/processed/"
 PRESET = [
-    "directness",
+    # "directness",
     "coverage",
-    "hierarchical",
-    "betweenness",
-    "closeness",
-    "random",
+    # "hierarchical",
+    # "betweenness",
+    # "closeness",
+    # "random",
 ]
-met = "random"
 BUFF_SIZE = 400
+ROAD_HIERARCHY_MAP = {
+    "primary": 4,
+    "secondary": 3,
+    "tertiary": 2,
+    "quaternary": 1,
+}
+BIKE_HIERARCHY_MAP = {
+    "primary": 2,
+    "secondary": 1,
+}
+# FIXME coverage
 
 
 def main():
     gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
+    gdf_edges["hierarchy"] = gdf_edges["level"].map(BIKE_HIERARCHY_MAP)
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-    for i in range(500):
+    for met in PRESET:
         odb = Orderbike(
             G, preset=met, buff_size=BUFF_SIZE, built=False, keep_connected=True
         )
-        foldername = FOLDEROOT + f"bs_{BUFF_SIZE}_random/" + met + f"_{i:03}/"
+        foldername = FOLDEROOT + f"bs_{BUFF_SIZE}_{met}/"
         if not os.path.exists(foldername):
             os.makedirs(foldername)
         odb.grow()

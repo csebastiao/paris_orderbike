@@ -1,0 +1,124 @@
+"""
+Plot every additive growth strategies.
+"""
+
+import json
+import os
+import networkx as nx
+import geopandas as gpd
+import momepy as mp
+from paris_orderbike.plot import plot_growth, plot_graph
+
+FOLDER_DATA = "./data/processed/"
+FOLDER_PLOT = "./plots/"
+TIMESTAMPS = [
+    "2021-01-01",
+    "2023-05-17",
+    "2023-10-01",
+    "2024-01-15",
+    "2024-04-04",
+    "2024-08-22",
+    "2024-12-22",
+    "2025-06-02",
+    "2026-01-28",
+    "No",
+]
+BUFF_SIZE = 400
+BUFFER = True
+PLOT_METRICS = False
+DPI = 100  # Larger means bigger files and longer to save, and there are a lot of pictures so quickly taking space and time
+MET_LIST = [
+    # "coverage",
+    "directness",
+    "betweenness",
+    "closeness",
+    "road_hierarchy",
+    "bikenet_hierarchy",
+]
+# FIXME
+# TODO add a way to plot also all relevant metrics below or somewhere, show the current step, and the number of kilometers built
+
+
+def main():
+    gdf_edges = gpd.read_file(FOLDER_DATA + "bikenet_edges.gpkg")
+    G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
+    folderplot = FOLDER_PLOT + "growths/"
+    if not os.path.exists(folderplot):
+        os.makedirs(folderplot)
+    for met in MET_LIST:
+        foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{met}"
+        foldermet += "/"
+        foldermetplot = folderplot + met + "/"
+        if not os.path.exists(foldermetplot):
+            os.makedirs(foldermetplot)
+        with open(foldermet + "order_growth.json") as f:
+            order_growth = json.load(f)
+        order_growth = [tuple(val) for val in order_growth]
+        with open(foldermet + "metrics_growth.json") as f:
+            metrics_dict = json.load(f)
+        plot_growth(
+            G,
+            order_growth,
+            foldermetplot,
+            built=False,
+            color_built="firebrick",
+            color_added="steelblue",
+            color_newest="darkgreen",
+            node_size=8,
+            buffer=BUFFER,
+            buff_size=BUFF_SIZE,
+            plot_metrics=PLOT_METRICS,
+            growth_cov=metrics_dict["coverage"],
+            growth_xx=metrics_dict["xx"],
+            growth_dir=metrics_dict["directness"],
+            dpi=DPI,
+        )
+    # Plot real growth
+    folderrealplot = folderplot + "real/"
+    if not os.path.exists(folderrealplot):
+        os.makedirs(folderrealplot)
+    # Get boundaries for first edge to be in the right bbox
+    _, ax = plot_graph(
+        G,
+        filepath=folderrealplot + "No.png",
+        node_size=8,
+        dpi=DPI,
+        show=False,
+        save=True,
+        close=False,
+    )
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    closeness = nx.closeness_centrality(G, distance="length")
+    edge_closeness = {}
+    for edge in G.edges:
+        edge_closeness[edge] = (closeness[edge[0]] + closeness[edge[1]]) / 2
+    init_edge = [tuple(max(edge_closeness, key=edge_closeness.get))]
+    G_init = G.edge_subgraph(init_edge)
+    plot_graph(
+        G_init,
+        filepath=folderrealplot + "0.png",
+        node_size=8,
+        dpi=DPI,
+        show=False,
+        save=True,
+        close=True,
+        bbox=[ymin, ymax, xmin, xmax],
+    )
+    for idx, t in enumerate(TIMESTAMPS[:-1]):
+        H = G.edge_subgraph(
+            [e for e in G.edges if G.edges[e]["built"] in TIMESTAMPS[: idx + 1]]
+        )
+        plot_graph(
+            H,
+            filepath=folderrealplot + t + ".png",
+            node_size=8,
+            dpi=DPI,
+            show=False,
+            save=True,
+            close=True,
+        )
+
+
+if __name__ == "__main__":
+    main()

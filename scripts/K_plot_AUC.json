@@ -1,0 +1,34 @@
+{
+    "order":["coverage", "directness", "betweenness", "closeness", "random", "road_hierarchy", "bikenet_hierarchy", "real"],
+    "label":["Coverage", "Directness", "Betweenness","Closeness", "Random", "Hierarchical (Road)", "Hierarchical (Bikenet)", "Real"],
+    "color":["#0173b2", "#d55e00", "#029e73", "#cc78bc", "#adadad", "black", "black", "black"],
+    "edgecolor":["Face", "Face",  "Face", "Face", "Face", "Face", "Face", "Face"],
+    "marker":["^", "s",  "h", "p", "o", "v", "D", "*"],
+    "alpha":[0.65,  0.65,  0.65, 0.65, 0.5, 0.65, 0.65, 1],
+    "s":[30, 30, 35, 35, 20, 30, 30, 100],
+    "figsize":[6.18, 6.18],
+    "errorbar":{
+        "elinewidth":1,
+        "color":"black",
+        "markersize":6
+    },
+    "rcparams":{
+        "font.size":10,
+        "font.family": "sans-serif",
+        "font.sans-serif": "Arial",
+        "axes.grid":"True",
+        "axes.spines.right": "False",
+        "axes.spines.top": "False",
+        "axes.axisbelow": "True",
+        "grid.color": "E1E1E1",
+        "xtick.bottom": "True",
+        "ytick.left": "True",
+        "figure.frameon": "False",
+        "figure.dpi": 400,
+        "savefig.bbox": "tight",
+        "legend.loc": "lower left",
+        "legend.edgecolor": "black",
+        "legend.facecolor": "F7F7F7",
+        "errorbar.capsize": 4
+    }
+}

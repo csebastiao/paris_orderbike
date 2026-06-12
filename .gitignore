@@ -265,6 +265,8 @@ data/processed/pes_filled
 data/processed/pes_joined
 data/processed/map_matching*
 data/processed/paris_car_edges_neatified.gpkg
+data/processed/bs*
+plots/growths/
 *.gpkg-shm
 *.gpkg-wal
 *.qgz
