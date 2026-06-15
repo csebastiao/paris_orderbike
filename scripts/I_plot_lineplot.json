@@ -1,10 +1,10 @@
 {
-    "order":["coverage", "directness", "betweenness", "dual_betweenness", "closeness", "dual_closeness", "random","road_hierarchy", "bikenet_hierarchy", "real"],
-    "label":["Coverage", "Directness", "Betweenness", "Dual Betweenness", "Closeness", "Dual Closeness", "Random", "Hierarchical (Road)", "Hierarchical (Bikenet)", "Real"],
-    "color":["#0173b2", "#d55e00", "#029e73", "red", "#cc78bc", "red", "#949494", "black", "black", "black"],
-    "marker":["^", "s", "h", "d", "p", "X", "o", "v", "D", "*"],
-    "alpha":[0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.7, 0.9, 0.9, 1],
-    "markersize":[3, 2, 2, 2, 2, 2, 2, 2, 2, 10],
+    "order":["coverage", "directness", "betweenness", "dual_betweenness", "closeness", "dual_closeness", "random","road_hierarchy", "road_hierarchy_coverage", "bikenet_hierarchy", "bikenet_hierarchy_coverage", "real"],
+    "label":["Coverage", "Directness", "Betweenness", "Dual Betweenness", "Closeness", "Dual Closeness", "Random", "Hierarchical (Road)", "Hierarchical with coverage (Road)", "Hierarchical (Bikenet)", "Hierarchical with coverage (Bikenet)", "Real"],
+    "color":["#0173b2", "#d55e00", "#029e73", "red", "#cc78bc", "red", "#949494", "black", "grey", "black", "grey", "black"],
+    "marker":["^", "s", "h", "d", "p", "X", "o", "v", "v", "D", "D", "*"],
+    "alpha":[0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.7, 0.9, 1, 0.9, 1, 1],
+    "markersize":[3, 2, 2, 2, 2, 2, 2, 2, 6, 2, 6, 10],
     "figsize":[11.69, 8.27],
     "rcparams":{
         "font.size":10,

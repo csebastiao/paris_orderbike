@@ -33,10 +33,12 @@ MET_LIST = [
     # "dual_betweenness",
     # "closeness",
     # "dual_closeness",
-    "road_hierarchy",
-    "bikenet_hierarchy",
+    # "road_hierarchy",
+    # "bikenet_hierarchy",
+    "road_hierarchy_coverage",
+    "bikenet_hierarchy_coverage",
 ]
-# FIXME
+CHOICE = 0
 # TODO add a way to plot also all relevant metrics below or somewhere, show the current step, and the number of kilometers built
 
 
@@ -47,11 +49,12 @@ def main():
     if not os.path.exists(folderplot):
         os.makedirs(folderplot)
     for met in MET_LIST:
-        foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{met}"
-        foldermet += "/"
+        foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{met}/"
         foldermetplot = folderplot + met + "/"
         if not os.path.exists(foldermetplot):
             os.makedirs(foldermetplot)
+        if met in ["coverage", "random", "road_hierarchy", "bikenet_hierarchy"]:
+            foldermet += f"{met}_{CHOICE:03}/"
         with open(foldermet + "order_growth.json") as f:
             order_growth = json.load(f)
         order_growth = [

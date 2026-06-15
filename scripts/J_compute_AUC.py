@@ -6,7 +6,7 @@ Script to compute the Area Under the Curve of all metrics for all strategies for
 import json
 import pandas as pd
 from paris_orderbike.utils import auc_from_metrics_dict
-from G_grow_bikenet import BUFF_SIZE, NUM_HIER_TRIAL, NUM_RAND_TRIAL
+from G_grow_bikenet import BUFF_SIZE, NUM_HIER_TRIAL, NUM_RAND_TRIAL, NUM_COV_TRIAL
 from I_plot_lineplot import FOLDER_DATA
 
 METRIC_LIST = [
@@ -18,7 +18,9 @@ METRIC_LIST = [
     "dual_closeness",
     "random",
     "road_hierarchy",
+    "road_hierarchy_coverage",
     "bikenet_hierarchy",
+    "bikenet_hierarchy_coverage",
     "real",
 ]
 EXP_DISC = False
@@ -28,11 +30,13 @@ def main():
     aucs = []
     for met in METRIC_LIST:
         foldermet = FOLDER_DATA + f"bs_{BUFF_SIZE}_{met}/"
-        if met in ["random", "road_hierarchy", "bikenet_hierarchy"]:
+        if met in ["random", "road_hierarchy", "bikenet_hierarchy", "coverage"]:
             if met == "random":
                 num_step = NUM_RAND_TRIAL
             elif met in ["road_hierarchy", "bikenet_hierarchy"]:
                 num_step = NUM_HIER_TRIAL
+            elif met in ["coverage"]:
+                num_step = NUM_COV_TRIAL
             for i in range(num_step):
                 with open(foldermet + f"{met}_{i:03}/metrics_growth.json", "r") as f:
                     met_dict = json.load(f)

@@ -6,6 +6,7 @@ Class to grow a graph.
 import numpy as np
 import networkx as nx
 import momepy as mp
+import shapely
 from .metrics import directness
 
 
@@ -28,19 +29,23 @@ class Orderbike:
         self.seed = seed
         self.random_generator = np.random.default_rng(seed=self.seed)
         self.keep_connected = keep_connected
+        self.edge_to_id = {edge: idx for idx, edge in enumerate(self.G.edges)}
+        self.id_to_edge = {idx: edge for idx, edge in enumerate(self.G.edges)}
         self.built = built
+        self.hierarchy_level = 0
         if self.built:
             self.G_init = self._build_graph()
         else:
             self.G_init = self._init_graph(preset)
         self.G_actual = self.G_init.copy()
         self.edges_actual = list(self.G_actual.edges)
-        self.actual_buff_geom = mp.nx_to_gdf(
-            self.G_actual, points=False, lines=True
-        ).buffer(buff_size)
+        self.actual_buff_geom = (
+            mp.nx_to_gdf(self.G_actual, points=False, lines=True)
+            .buffer(buff_size)
+            .union_all()
+        )
         self.max_area = self.gdf_edges.buffer(buff_size).union_all().area
         self.num_step = len(self.G.edges) - len(self.G_init.edges)
-        self.hierarchy_level = 0
         self.directness = 0
         self.xx = 0
         self.num_cc = 0
@@ -99,7 +104,7 @@ class Orderbike:
             },
             "hierarchy_coverage": {
                 "main_func": self.main_hierarchy_coverage,
-                "upda_func": self.upda_coverage,
+                "upda_func": self.upda_hierarchy_coverage,
                 "type_func": "dynamic",
             },
             "random": {
@@ -130,7 +135,7 @@ class Orderbike:
         "Initialize the graph with the edge of highest average closeness centrality."
         closeness = nx.closeness_centrality(self.G, distance="length")
         if preset in ["hierarchy", "hierarchy_coverage"]:
-            max_hierarchy = self.gdf_edges["hierarchy"].max()
+            max_hierarchy = int(self.gdf_edges["hierarchy"].max())
             self.hierarchy_level = max_hierarchy
             edge_closeness = {
                 edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
@@ -149,7 +154,7 @@ class Orderbike:
     def _compute_metrics(self):
         self.directness = directness(self.G_actual)
         self.xx = sum([self.G_actual.edges[e]["length"] for e in self.edges_actual])
-        self.actual_area = self.actual_buff_geom.union_all().area
+        self.actual_area = self.actual_buff_geom.area
         cc = list(nx.connected_components(self.G_actual))
         self.num_cc = len(cc)
         self.length_lcc = max(
@@ -249,9 +254,12 @@ class Orderbike:
         self.growth_order.append(choice)
         self.edges_actual.append(choice)
         self.G_actual = self.G.edge_subgraph(self.edges_actual)
-        self.actual_buff_geom.loc[len(self.actual_buff_geom) + 1] = self.G.edges[
-            choice
-        ]["geometry"].buffer(self.buff_size)
+        self.actual_buff_geom = shapely.unary_union(
+            [
+                self.actual_buff_geom,
+                self.G.edges[choice]["geometry"].buffer(self.buff_size),
+            ]
+        )
         self._compute_metrics()
 
     def get_metrics_dict(self):
@@ -266,12 +274,15 @@ class Orderbike:
     def main_coverage(self):
         if self.keep_searching:
             edge = self.edges_tested[-1]
-            geom_test = self.actual_buff_geom.copy()
-            geom_test.loc[len(geom_test) + 1] = self.G.edges[edge]["geometry"].buffer(
-                self.buff_size
-            )
-            test_area = geom_test.geometry.union_all().area
-            return (test_area - self.actual_area) / self.G.edges[edge]["length"]
+            return (
+                shapely.unary_union(
+                    [
+                        self.actual_buff_geom,
+                        self.G.edges[edge]["geometry"].buffer(self.buff_size),
+                    ]
+                ).area
+                - self.actual_area
+            ) / self.G.edges[edge]["length"]
         return 0
 
     def upda_coverage(self):
@@ -290,8 +301,7 @@ class Orderbike:
 
     def main_dual_betweenness(self):
         # FIXME random order currently
-        edge_mapping = {idx: edge for idx, edge in enumerate(self.G.edges)}
-        coins = mp.COINS(self.gdf_edges)
+        coins = mp.COINS(self.gdf_edges.copy())
         G_dual = mp.coins_to_nx(coins)
         nx.set_node_attributes(
             G_dual,
@@ -300,7 +310,7 @@ class Orderbike:
         )
         strokes, _ = mp.nx_to_gdf(G_dual)
         strokes = strokes.explode("edge_indices")
-        strokes["edge_indices"] = strokes["edge_indices"].map(edge_mapping)
+        strokes["edge_indices"] = strokes["edge_indices"].map(self.id_to_edge)
         return {
             key: val
             for key, val in sorted(
@@ -325,7 +335,6 @@ class Orderbike:
 
     def main_dual_closeness(self):
         # FIXME random order currently
-        edge_mapping = {idx: edge for idx, edge in enumerate(self.G.edges)}
         coins = mp.COINS(self.gdf_edges)
         G_dual = mp.coins_to_nx(coins)
         nx.set_node_attributes(
@@ -335,7 +344,7 @@ class Orderbike:
         )
         strokes, _ = mp.nx_to_gdf(G_dual)
         strokes = strokes.explode("edge_indices")
-        strokes["edge_indices"] = strokes["edge_indices"].map(edge_mapping)
+        strokes["edge_indices"] = strokes["edge_indices"].map(self.id_to_edge)
         return {
             key: val
             for key, val in sorted(
@@ -360,16 +369,47 @@ class Orderbike:
     def main_hierarchy_coverage(self):
         edge = self.edges_tested[-1]
         if self.G.edges[edge]["hierarchy"] < self.hierarchy_level:
-            return 0
+            if any(
+                self.gdf_edges.iloc[[self.edge_to_id[idx] for idx in self.valid_edges]][
+                    "hierarchy"
+                ]
+                == self.hierarchy_level
+            ):
+                return 0
+            return (
+                10 ** (-8 + 2 * self.G.edges[edge]["hierarchy"])
+                * (
+                    shapely.unary_union(
+                        [
+                            self.actual_buff_geom,
+                            self.G.edges[edge]["geometry"].buffer(self.buff_size),
+                        ]
+                    ).area
+                    - self.actual_area
+                )
+                / self.G.edges[edge]["length"]
+            )
         else:
             if self.keep_searching:
-                geom_test = self.actual_buff_geom.copy()
-                geom_test.loc[len(geom_test) + 1] = self.G.edges[edge][
-                    "geometry"
-                ].buffer(self.buff_size)
-                test_area = geom_test.geometry.union_all().area
-                return (test_area - self.actual_area) / self.G.edges[edge]["length"]
+                return (
+                    shapely.unary_union(
+                        [
+                            self.actual_buff_geom,
+                            self.G.edges[edge]["geometry"].buffer(self.buff_size),
+                        ]
+                    ).area
+                    - self.actual_area
+                ) / self.G.edges[edge]["length"]
             return 1
+
+    def upda_hierarchy_coverage(self):
+        gdf_edges_actual = mp.nx_to_gdf(self.G_actual, points=False, lines=True)
+        if len(
+            gdf_edges_actual[gdf_edges_actual["hierarchy"] == self.hierarchy_level]
+        ) == len(self.gdf_edges[self.gdf_edges["hierarchy"] == self.hierarchy_level]):
+            self.hierarchy_level = self.hierarchy_level - 1
+        if self.actual_area == self.max_area:
+            self.keep_searching = False
 
     def main_random(self):
         edgelist = list(self.G.edges)
