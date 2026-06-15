@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 import numpy as np
-from I_plot_lineplot import FOLDER_DATA, FOLDER_PLOT
+from I_plot_lineplot import FOLDER_PLOT, FOLDER_DATA
 
 
 def main():

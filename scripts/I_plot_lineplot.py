@@ -9,9 +9,9 @@ import pandas as pd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from G_grow_bikenet import BUFF_SIZE, NUM_HIER_TRIAL, NUM_RAND_TRIAL, NUM_COV_TRIAL
+from G_grow_bikenet import FOLDER_OUT as FOLDER_DATA
 
-FOLDER_DATA = "./data/processed/"
-FOLDER_PLOT = "./plots/"
+FOLDER_PLOT = f"./plots/{FOLDER_DATA.split('/')[-2]}/"
 
 
 def main():
