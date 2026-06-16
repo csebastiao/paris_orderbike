@@ -1,10 +1,10 @@
 {
-    "order":["coverage", "directness", "betweenness", "dual_betweenness", "closeness", "dual_closeness", "random","road_hierarchy", "road_hierarchy_coverage", "bikenet_hierarchy", "bikenet_hierarchy_coverage", "real"],
-    "label":["Coverage", "Directness", "Betweenness", "Dual Betweenness", "Closeness", "Dual Closeness", "Random", "Hierarchical (Road)", "Hierarchical with coverage (Road)", "Hierarchical (Bikenet)", "Hierarchical with coverage (Bikenet)", "Real"],
-    "color":["#0173b2", "#d55e00", "#029e73", "red", "#cc78bc", "red", "#949494", "black", "grey", "black", "grey", "black"],
-    "marker":["^", "s", "h", "d", "p", "X", "o", "v", "v", "D", "D", "*"],
-    "alpha":[0.65,  0.65,  0.65, 0.65, 0.65, 0.65, 0.5, 0.65, 1, 0.65, 1, 1],
-    "s":[30, 30, 35, 35, 35, 35, 20, 30, 90, 30, 90, 100],
+    "order":["coverage", "directness", "betweenness", "dual_betweenness", "closeness", "dual_closeness", "random","road_hierarchy", "road_hierarchy_coverage", "road_hierarchy_directness", "real"],
+    "label":["Coverage", "Directness", "Betweenness", "Dual Betweenness", "Closeness", "Dual Closeness", "Random", "Hierarchical (Road)", "Hierarchical with coverage (Road)", "Hierarchical with directness (Road)", "Real"],
+    "color":["#0173b2", "#d55e00", "#029e73", "red", "#cc78bc", "red", "#949494", "black", "grey", "pink", "black"],
+    "marker":["^", "s", "h", "d", "p", "X", "o", "v", "v", "v", "*"],
+    "alpha":[0.65,  0.65,  0.65, 0.65, 0.65, 0.65, 0.5, 0.65, 1, 1, 1],
+    "s":[30, 30, 35, 35, 35, 35, 20, 30, 90, 90, 100],
     "figsize":[6.18, 6.18],
     "errorbar":{
         "elinewidth":1,

@@ -5,20 +5,21 @@ Grow Paris bicycle network.
 
 import geopandas as gpd
 import momepy as mp
+import networkx as nx
 from paris_orderbike.growth import Orderbike
 import json
 import os
 
-FOLDER_IN = "./data/processed/"
-FOLDER_OUT = "./data/processed/2021/"
+FOLDEROOT = "./data/processed/"
 PRESET = [
-    # "directness",
-    # "coverage",
-    # "hierarchy",
-    # "hierarchy_coverage",
-    # "betweenness",
-    # "closeness",
-    # "random",
+    "directness",
+    "coverage",
+    "hierarchy",
+    "hierarchy_coverage",
+    "hierarchy_directness",
+    "betweenness",
+    "closeness",
+    "random",
     "dual_betweenness",
     "dual_closeness",
 ]
@@ -36,62 +37,87 @@ BUFF_SIZE = 400
 NUM_RAND_TRIAL = 500
 NUM_HIER_TRIAL = 20
 NUM_COV_TRIAL = 20
-BUILT = True
 
 
 def main():
-    if not os.path.exists(FOLDER_OUT):
-        os.makedirs(FOLDER_OUT)
-    gdf_edges = gpd.read_file(FOLDER_IN + "bikenet_edges.gpkg")
-    if BUILT:
-        gdf_edges["built"] = gdf_edges["built_in"].apply(
-            lambda x: 1 if x == "2021-01-01" else 0
-        )
-    for met in PRESET:
-        if met == "random":
+    for end_folder in [
+        "Nothing",
+        "2021",
+    ]:
+        folder_save = FOLDEROOT + end_folder + "/"
+        if not os.path.exists(folder_save):
+            os.makedirs(folder_save)
+        gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
+        if folder_save.split("/")[-2] == "2021":
+            gdf_edges["built"] = gdf_edges["built_in"].apply(
+                lambda x: 1 if x == "2021-01-01" else 0
+            )
+        elif folder_save.split("/")[-2] == "Nothing":
             G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-            for i in range(NUM_RAND_TRIAL):
-                foldername = FOLDER_OUT + f"bs_{BUFF_SIZE}_{met}/{met}_{i:03}/"
-                run_and_save_orderbike(G, met, BUFF_SIZE, BUILT, foldername)
-        elif met == "hierarchy":
-            for args in [
-                ["highway", ROAD_HIERARCHY_MAP, "road"],
-                ["level", BIKE_HIERARCHY_MAP, "bikenet"],
-            ]:
-                gdf_edges["hierarchy"] = gdf_edges[args[0]].map(args[1])
+            closeness = nx.closeness_centrality(G, distance="length")
+            edge_closeness = {
+                edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
+                for edge in G.edges
+                if (
+                    (G.edges[edge]["highway"] == "primary")
+                    & (G.edges[edge]["level"] == "primary")
+                )
+            }
+            choice = max(edge_closeness, key=edge_closeness.get)
+            gdf_edges["built"] = 0
+            gdf_edges[
+                (gdf_edges["from"] == str(choice[0]))
+                & (gdf_edges["to"] == str(choice[1]))
+            ]["built"] = 1
+        for met in PRESET:
+            if met == "random":
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-                for i in range(NUM_HIER_TRIAL):
-                    foldername = (
-                        FOLDER_OUT
-                        + f"bs_{BUFF_SIZE}_{args[2]}_{met}/{args[2]}_{met}_{i:03}/"
+                for i in range(NUM_RAND_TRIAL):
+                    foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/{met}_{i:03}/"
+                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+            elif met == "hierarchy":
+                for args in [
+                    ["highway", ROAD_HIERARCHY_MAP, "road"],
+                    ["level", BIKE_HIERARCHY_MAP, "bikenet"],
+                ]:
+                    gdf_edges["hierarchy"] = gdf_edges[args[0]].map(args[1])
+                    G = mp.gdf_to_nx(
+                        gdf_edges, integer_labels=False, preserve_index=True
                     )
-                    run_and_save_orderbike(G, met, BUFF_SIZE, BUILT, foldername)
-        elif met == "hierarchy_coverage":
-            for args in [
-                ["highway", ROAD_HIERARCHY_MAP, "road"],
-                ["level", BIKE_HIERARCHY_MAP, "bikenet"],
-            ]:
-                gdf_edges["hierarchy"] = gdf_edges[args[0]].map(args[1])
+                    for i in range(NUM_HIER_TRIAL):
+                        foldername = (
+                            folder_save
+                            + f"bs_{BUFF_SIZE}_{args[2]}_{met}/{args[2]}_{met}_{i:03}/"
+                        )
+                        run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+            elif met in ["hierarchy_coverage", "hierarchy_directness"]:
+                for args in [
+                    ["highway", ROAD_HIERARCHY_MAP, "road"],
+                    ["level", BIKE_HIERARCHY_MAP, "bikenet"],
+                ]:
+                    gdf_edges["hierarchy"] = gdf_edges[args[0]].map(args[1])
+                    G = mp.gdf_to_nx(
+                        gdf_edges, integer_labels=False, preserve_index=True
+                    )
+                    foldername = folder_save + f"bs_{BUFF_SIZE}_{args[2]}_{met}/"
+                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+            elif met == "coverage":
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-                foldername = FOLDER_OUT + f"bs_{BUFF_SIZE}_{args[2]}_{met}/"
-                run_and_save_orderbike(G, met, BUFF_SIZE, BUILT, foldername)
-        elif met == "coverage":
-            G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-            for i in range(NUM_COV_TRIAL):
-                foldername = FOLDER_OUT + f"bs_{BUFF_SIZE}_{met}/{met}_{i:03}/"
-                run_and_save_orderbike(G, met, BUFF_SIZE, BUILT, foldername)
-        else:
-            G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-            foldername = FOLDER_OUT + f"bs_{BUFF_SIZE}_{met}/"
-            run_and_save_orderbike(G, met, BUFF_SIZE, BUILT, foldername)
+                for i in range(NUM_COV_TRIAL):
+                    foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/{met}_{i:03}/"
+                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+            else:
+                G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
+                foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/"
+                run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
 
 
-def run_and_save_orderbike(G, met, BUFF_SIZE, BUILT, foldername):
+def run_and_save_orderbike(G, met, BUFF_SIZE, foldername):
     odb = Orderbike(
         G,
         preset=met,
         buff_size=BUFF_SIZE,
-        built=BUILT,
+        built=True,
         keep_connected=True,
     )
     if not os.path.exists(foldername):

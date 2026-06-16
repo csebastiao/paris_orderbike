@@ -34,7 +34,7 @@ class Orderbike:
         self.built = built
         self.hierarchy_level = 0
         if self.built:
-            self.G_init = self._build_graph()
+            self.G_init = self._build_graph(preset)
         else:
             self.G_init = self._init_graph(preset)
         self.G_actual = self.G_init.copy()
@@ -107,6 +107,11 @@ class Orderbike:
                 "upda_func": self.upda_hierarchy_coverage,
                 "type_func": "dynamic",
             },
+            "hierarchy_directness": {
+                "main_func": self.main_hierarchy_directness,
+                "upda_func": self.upda_hierarchy_directness,
+                "type_func": "dynamic",
+            },
             "random": {
                 "main_func": self.main_random,
                 "upda_func": None,
@@ -127,8 +132,10 @@ class Orderbike:
                 self.preset_dict[self.preset]["type_func"],
             )
 
-    def _build_graph(self):
+    def _build_graph(self, preset):
         "Use the built argument to initialize the graph with only a specific set of edges."
+        if preset in ["hierarchy", "hierarchy_coverage", "hierarchy_directness"]:
+            self.hierarchy_level = int(self.gdf_edges["hierarchy"].max())
         return self.G.edge_subgraph(
             [edge for edge in self.G.edges if self.G.edges[edge]["built"] == 1]
         )
@@ -136,7 +143,7 @@ class Orderbike:
     def _init_graph(self, preset):
         "Initialize the graph with the edge of highest average closeness centrality."
         closeness = nx.closeness_centrality(self.G, distance="length")
-        if preset in ["hierarchy", "hierarchy_coverage"]:
+        if preset in ["hierarchy", "hierarchy_coverage", "hierarchy_directness"]:
             max_hierarchy = int(self.gdf_edges["hierarchy"].max())
             self.hierarchy_level = max_hierarchy
             edge_closeness = {
@@ -302,7 +309,6 @@ class Orderbike:
         }
 
     def main_dual_betweenness(self):
-        # FIXME random order currently
         coins = mp.COINS(self.gdf_edges.copy())
         G_dual = mp.coins_to_nx(coins)
         nx.set_node_attributes(
@@ -311,14 +317,14 @@ class Orderbike:
             "stroke_betweenness",
         )
         strokes, _ = mp.nx_to_gdf(G_dual)
-        strokes = strokes.explode("edge_indices")
-        strokes["edge_indices"] = strokes["edge_indices"].map(self.id_to_edge)
+        strokes = strokes.explode("edge_indices").set_index("edge_indices")
+        gdf_cont = self.gdf_edges.copy()
+        gdf_cont["stroke_betweenness"] = strokes["stroke_betweenness"]
+        H = mp.gdf_to_nx(gdf_cont, integer_labels=False, preserve_index=True)
         return {
             key: val
             for key, val in sorted(
-                strokes.set_index("edge_indices")["stroke_betweenness"]
-                .to_dict()
-                .items(),
+                nx.get_edge_attributes(H, "stroke_betweenness").items(),
                 key=lambda x: x[1],
                 reverse=True,
             )
@@ -336,8 +342,7 @@ class Orderbike:
         }
 
     def main_dual_closeness(self):
-        # FIXME random order currently
-        coins = mp.COINS(self.gdf_edges)
+        coins = mp.COINS(self.gdf_edges.copy())
         G_dual = mp.coins_to_nx(coins)
         nx.set_node_attributes(
             G_dual,
@@ -345,12 +350,14 @@ class Orderbike:
             "stroke_closeness",
         )
         strokes, _ = mp.nx_to_gdf(G_dual)
-        strokes = strokes.explode("edge_indices")
-        strokes["edge_indices"] = strokes["edge_indices"].map(self.id_to_edge)
+        strokes = strokes.explode("edge_indices").set_index("edge_indices")
+        gdf_cont = self.gdf_edges.copy()
+        gdf_cont["stroke_closeness"] = strokes["stroke_closeness"]
+        H = mp.gdf_to_nx(gdf_cont, integer_labels=False, preserve_index=True)
         return {
             key: val
             for key, val in sorted(
-                strokes.set_index("edge_indices")["stroke_closeness"].to_dict().items(),
+                nx.get_edge_attributes(H, "stroke_closeness").items(),
                 key=lambda x: x[1],
                 reverse=True,
             )
@@ -378,30 +385,38 @@ class Orderbike:
                 == self.hierarchy_level
             ):
                 return 0
+            else:
+                lower_hierarchy = self.hierarchy_level - 1
+                while not any(
+                    self.gdf_edges.iloc[
+                        [self.edge_to_id[idx] for idx in self.valid_edges]
+                    ]["hierarchy"]
+                    == lower_hierarchy
+                ):
+                    lower_hierarchy = lower_hierarchy - 1
+                if self.G.edges[edge]["hierarchy"] < lower_hierarchy:
+                    return 0
+                else:
+                    return (
+                        shapely.unary_union(
+                            [
+                                self.actual_buff_geom,
+                                self.G.edges[edge]["geometry"].buffer(self.buff_size),
+                            ]
+                        ).area
+                        - self.actual_area
+                    ) / self.G.edges[edge]["length"]
+        elif self.keep_searching:
             return (
-                10 ** (-8 + 2 * self.G.edges[edge]["hierarchy"])
-                * (
-                    shapely.unary_union(
-                        [
-                            self.actual_buff_geom,
-                            self.G.edges[edge]["geometry"].buffer(self.buff_size),
-                        ]
-                    ).area
-                    - self.actual_area
-                )
-                / self.G.edges[edge]["length"]
-            )
+                shapely.unary_union(
+                    [
+                        self.actual_buff_geom,
+                        self.G.edges[edge]["geometry"].buffer(self.buff_size),
+                    ]
+                ).area
+                - self.actual_area
+            ) / self.G.edges[edge]["length"]
         else:
-            if self.keep_searching:
-                return (
-                    shapely.unary_union(
-                        [
-                            self.actual_buff_geom,
-                            self.G.edges[edge]["geometry"].buffer(self.buff_size),
-                        ]
-                    ).area
-                    - self.actual_area
-                ) / self.G.edges[edge]["length"]
             return 1
 
     def upda_hierarchy_coverage(self):
@@ -412,6 +427,38 @@ class Orderbike:
             self.hierarchy_level = self.hierarchy_level - 1
         if self.actual_area == self.max_area:
             self.keep_searching = False
+
+    def main_hierarchy_directness(self):
+        edge = self.edges_tested[-1]
+        if self.G.edges[edge]["hierarchy"] < self.hierarchy_level:
+            if any(
+                self.gdf_edges.iloc[[self.edge_to_id[idx] for idx in self.valid_edges]][
+                    "hierarchy"
+                ]
+                == self.hierarchy_level
+            ):
+                return 0
+            else:
+                lower_hierarchy = self.hierarchy_level - 1
+                while not any(
+                    self.gdf_edges.iloc[
+                        [self.edge_to_id[idx] for idx in self.valid_edges]
+                    ]["hierarchy"]
+                    == lower_hierarchy
+                ):
+                    lower_hierarchy = lower_hierarchy - 1
+                if self.G.edges[edge]["hierarchy"] < lower_hierarchy:
+                    return 0
+                else:
+                    return directness(self.G_tested)
+        return directness(self.G_tested)
+
+    def upda_hierarchy_directness(self):
+        gdf_edges_actual = mp.nx_to_gdf(self.G_actual, points=False, lines=True)
+        if len(
+            gdf_edges_actual[gdf_edges_actual["hierarchy"] == self.hierarchy_level]
+        ) == len(self.gdf_edges[self.gdf_edges["hierarchy"] == self.hierarchy_level]):
+            self.hierarchy_level = self.hierarchy_level - 1
 
     def main_random(self):
         edgelist = list(self.G.edges)
