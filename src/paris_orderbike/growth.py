@@ -129,7 +129,9 @@ class Orderbike:
 
     def _build_graph(self):
         "Use the built argument to initialize the graph with only a specific set of edges."
-        return self.gdf_edges[self.gdf_edges["built"] == 1].index()
+        return self.G.edge_subgraph(
+            [edge for edge in self.G.edges if self.G.edges[edge]["built"] == 1]
+        )
 
     def _init_graph(self, preset):
         "Initialize the graph with the edge of highest average closeness centrality."

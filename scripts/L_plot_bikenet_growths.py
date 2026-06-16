@@ -8,7 +8,7 @@ import networkx as nx
 import geopandas as gpd
 import momepy as mp
 from paris_orderbike.plot import plot_growth, plot_graph
-from G_grow_bikenet import BUFF_SIZE
+from G_grow_bikenet import BUFF_SIZE, FOLDER_IN
 from I_plot_lineplot import FOLDER_DATA, FOLDER_PLOT
 
 TIMESTAMPS = [
@@ -27,14 +27,14 @@ BUFFER = True
 PLOT_METRICS = False
 DPI = 100  # Larger means bigger files and longer to save, and there are a lot of pictures so quickly taking space and time
 MET_LIST = [
-    # "coverage",
-    # "directness",
-    # "betweenness",
-    # "dual_betweenness",
-    # "closeness",
-    # "dual_closeness",
-    # "road_hierarchy",
-    # "bikenet_hierarchy",
+    "coverage",
+    "directness",
+    "betweenness",
+    "dual_betweenness",
+    "closeness",
+    "dual_closeness",
+    "road_hierarchy",
+    "bikenet_hierarchy",
     "road_hierarchy_coverage",
     "bikenet_hierarchy_coverage",
 ]
@@ -43,7 +43,7 @@ CHOICE = 0
 
 
 def main():
-    gdf_edges = gpd.read_file(FOLDER_DATA + "bikenet_edges.gpkg")
+    gdf_edges = gpd.read_file(FOLDER_IN + "bikenet_edges.gpkg")
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
     folderplot = FOLDER_PLOT + "growths/"
     if not os.path.exists(folderplot):

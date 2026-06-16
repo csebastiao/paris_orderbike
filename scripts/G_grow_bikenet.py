@@ -12,15 +12,15 @@ import os
 FOLDER_IN = "./data/processed/"
 FOLDER_OUT = "./data/processed/2021/"
 PRESET = [
-    "directness",
-    "coverage",
-    "hierarchy",
-    "hierarchy_coverage",
-    "betweenness",
-    "closeness",
-    "random",
-    # "dual_betweenness",
-    # "dual_closeness",
+    # "directness",
+    # "coverage",
+    # "hierarchy",
+    # "hierarchy_coverage",
+    # "betweenness",
+    # "closeness",
+    # "random",
+    "dual_betweenness",
+    "dual_closeness",
 ]
 ROAD_HIERARCHY_MAP = {
     "primary": 4,
@@ -42,7 +42,7 @@ BUILT = True
 def main():
     if not os.path.exists(FOLDER_OUT):
         os.makedirs(FOLDER_OUT)
-    gdf_edges = gpd.read_file(FOLDER_OUT + "bikenet_edges.gpkg")
+    gdf_edges = gpd.read_file(FOLDER_IN + "bikenet_edges.gpkg")
     if BUILT:
         gdf_edges["built"] = gdf_edges["built_in"].apply(
             lambda x: 1 if x == "2021-01-01" else 0

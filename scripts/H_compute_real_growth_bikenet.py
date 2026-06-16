@@ -8,7 +8,7 @@ import json
 import networkx as nx
 import geopandas as gpd
 import momepy as mp
-from G_grow_bikenet import BUFF_SIZE
+from G_grow_bikenet import BUFF_SIZE, BUILT, FOLDER_IN, FOLDER_OUT
 from paris_orderbike.metrics import directness, coverage
 
 
@@ -28,13 +28,18 @@ TIMESTAMPS = [
 
 
 def main():
-    gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
+    gdf_edges = gpd.read_file(FOLDER_IN + "bikenet_edges.gpkg")
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-    closeness = nx.closeness_centrality(G, distance="length")
-    edge_closeness = {}
-    for edge in G.edges:
-        edge_closeness[edge] = (closeness[edge[0]] + closeness[edge[1]]) / 2
-    init_edge = [tuple(max(edge_closeness, key=edge_closeness.get))]
+    if BUILT:
+        init_edge = [
+            edge for edge in G.edges if G.edges[edge]["built_in"] == "2021-01-01"
+        ]
+    else:
+        closeness = nx.closeness_centrality(G, distance="length")
+        edge_closeness = {}
+        for edge in G.edges:
+            edge_closeness[edge] = (closeness[edge[0]] + closeness[edge[1]]) / 2
+        init_edge = [tuple(max(edge_closeness, key=edge_closeness.get))]
     G_init = G.edge_subgraph(init_edge)
     tot_length = [sum([G_init.edges[e]["length"] for e in G_init.edges])]
     dir_real = [directness(G_init)]
@@ -64,7 +69,7 @@ def main():
     met_dict["directness"] = dir_real
     met_dict["num_cc"] = num_ccs
     met_dict["length_lcc"] = length_lcc
-    foldertime = FOLDEROOT + f"/bs_{BUFF_SIZE}_real/"
+    foldertime = FOLDER_OUT + f"/bs_{BUFF_SIZE}_real/"
     if not os.path.exists(foldertime):
         os.makedirs(foldertime)
     with open(foldertime + "metrics_growth.json", "w") as f:
