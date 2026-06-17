@@ -49,7 +49,7 @@ def main():
                     & (G.edges[edge]["level"] == "primary")
                 )
             }
-            init_edge = max(edge_closeness, key=edge_closeness.get)
+            init_edge = [max(edge_closeness, key=edge_closeness.get)]
         G_init = G.edge_subgraph(init_edge)
         tot_length = [sum([G_init.edges[e]["length"] for e in G_init.edges])]
         dir_real = [directness(G_init)]

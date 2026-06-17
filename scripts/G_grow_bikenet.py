@@ -64,11 +64,20 @@ def main():
                 )
             }
             choice = max(edge_closeness, key=edge_closeness.get)
-            gdf_edges["built"] = 0
-            gdf_edges[
-                (gdf_edges["from"] == str(choice[0]))
-                & (gdf_edges["to"] == str(choice[1]))
-            ]["built"] = 1
+            gdf_edges["built"] = gdf_edges.apply(
+                lambda df: (
+                    1
+                    if (
+                        ((df["from"] == str(choice[0])) & (df["to"] == str(choice[1])))
+                        or (
+                            (df["to"] == str(choice[0]))
+                            & (df["from"] == str(choice[1]))
+                        )
+                    )
+                    else 0
+                ),
+                axis=1,
+            )
         for met in PRESET:
             if met == "random":
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)

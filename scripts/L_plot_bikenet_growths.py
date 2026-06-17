@@ -8,7 +8,7 @@ import networkx as nx
 import geopandas as gpd
 import momepy as mp
 from paris_orderbike.plot import plot_growth, plot_graph
-from G_grow_bikenet import BUFF_SIZE, FOLDER_IN, FOLDEROOT
+from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
 from H_compute_real_growth_bikenet import TIMESTAMPS
 from I_plot_lineplot import FOLDERPLOT
 
@@ -34,14 +34,14 @@ CHOICE = 0
 
 
 def main():
-    gdf_edges = gpd.read_file(FOLDER_IN + "bikenet_edges.gpkg")
+    gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
     for end_folder in [
-        "Nothing",
+        # "Nothing",
         "2021",
     ]:
         folder_data = FOLDEROOT + end_folder + "/"
-        folder_plot = FOLDERPLOT + "growths/"
+        folder_plot = FOLDERPLOT + end_folder + "/growths/"
         if not os.path.exists(folder_plot):
             os.makedirs(folder_plot)
         for met in MET_LIST:

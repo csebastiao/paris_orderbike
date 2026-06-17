@@ -23,7 +23,7 @@ def main():
         "2021",
     ]:
         folder_data = FOLDEROOT + end_folder + "/"
-        folder_plot = FOLDERPLOT + "AUC/"
+        folder_plot = FOLDERPLOT + end_folder + "/AUC/"
         if not os.path.exists(folder_plot):
             os.makedirs(folder_plot)
         savename = folder_data + "/auc_table_growth"
