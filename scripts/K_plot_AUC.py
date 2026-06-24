@@ -35,6 +35,7 @@ def main():
             ax.scatter(
                 df_growth[mask_met]["AUC of Directness"],
                 df_growth[mask_met]["AUC of Coverage"],
+                linewidths=0,
                 zorder=2,
                 **{
                     key: val[ids]
@@ -57,12 +58,12 @@ def main():
                 ax.errorbar(
                     x=xx_mean,
                     y=yy_mean,
-                    yerr=yy_std * 2,
-                    xerr=xx_std * 2,
+                    yerr=yy_std,
+                    xerr=xx_std,
                     fmt="o",
                     **{key: val for key, val in plot_params["errorbar"].items()},
                 )
-        ax.set_xlabel("AUC of Directness")
+        ax.set_xlabel("AUC of directness")
         ax.set_ylabel("AUC of coverage")
         savename = folder_plot + "/AUC_comparison_cov_dir"
         # Put ticks at each 0.1
@@ -98,7 +99,14 @@ def main():
             zorder=1,
             label="Pareto front",
         )
-        ax.legend(prop={"size": plot_params["rcparams"]["font.size"] * 0.75})
+        lgnd = ax.legend(
+            prop={"size": plot_params["rcparams"]["font.size"] * 0.75},
+            labelspacing=0.75,
+            ncol=2,
+        )
+        for handle in lgnd.legend_handles[:-2]:
+            handle._sizes = [70]
+        lgnd.legend_handles[-2]._sizes = [120]
         fig.savefig(savename)
         plt.close(fig=fig)
 

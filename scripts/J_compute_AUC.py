@@ -25,8 +25,6 @@ METRIC_LIST = [
     "road_hierarchy",
     "road_hierarchy_coverage",
     "road_hierarchy_directness",
-    "bikenet_hierarchy",
-    "bikenet_hierarchy_coverage",
     "real",
 ]
 EXP_DISC = False
