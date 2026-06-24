@@ -34,9 +34,10 @@ BIKE_HIERARCHY_MAP = {
     "secondary": 1,
 }
 BUFF_SIZE = 400
-NUM_RAND_TRIAL = 500
-NUM_HIER_TRIAL = 20
+NUM_RAND_TRIAL = 1000
+NUM_HIER_TRIAL = 1000
 NUM_COV_TRIAL = 20
+RECOMPUTE = False
 
 
 def main():
@@ -83,11 +84,11 @@ def main():
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
                 for i in range(NUM_RAND_TRIAL):
                     foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/{met}_{i:03}/"
-                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername, RECOMPUTE)
             elif met == "hierarchy":
                 for args in [
                     ["highway", ROAD_HIERARCHY_MAP, "road"],
-                    ["level", BIKE_HIERARCHY_MAP, "bikenet"],
+                    # ["level", BIKE_HIERARCHY_MAP, "bikenet"],
                 ]:
                     gdf_edges["hierarchy"] = gdf_edges[args[0]].map(args[1])
                     G = mp.gdf_to_nx(
@@ -98,46 +99,49 @@ def main():
                             folder_save
                             + f"bs_{BUFF_SIZE}_{args[2]}_{met}/{args[2]}_{met}_{i:03}/"
                         )
-                        run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+                        run_and_save_orderbike(G, met, BUFF_SIZE, foldername, RECOMPUTE)
             elif met in ["hierarchy_coverage", "hierarchy_directness"]:
                 for args in [
                     ["highway", ROAD_HIERARCHY_MAP, "road"],
-                    ["level", BIKE_HIERARCHY_MAP, "bikenet"],
+                    # ["level", BIKE_HIERARCHY_MAP, "bikenet"],
                 ]:
                     gdf_edges["hierarchy"] = gdf_edges[args[0]].map(args[1])
                     G = mp.gdf_to_nx(
                         gdf_edges, integer_labels=False, preserve_index=True
                     )
                     foldername = folder_save + f"bs_{BUFF_SIZE}_{args[2]}_{met}/"
-                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername, RECOMPUTE)
             elif met == "coverage":
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
                 for i in range(NUM_COV_TRIAL):
                     foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/{met}_{i:03}/"
-                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+                    run_and_save_orderbike(G, met, BUFF_SIZE, foldername, RECOMPUTE)
             else:
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
                 foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/"
-                run_and_save_orderbike(G, met, BUFF_SIZE, foldername)
+                run_and_save_orderbike(G, met, BUFF_SIZE, foldername, RECOMPUTE)
 
 
-def run_and_save_orderbike(G, met, BUFF_SIZE, foldername):
-    odb = Orderbike(
-        G,
-        preset=met,
-        buff_size=BUFF_SIZE,
-        built=True,
-        keep_connected=True,
-    )
-    if not os.path.exists(foldername):
-        os.makedirs(foldername)
-    odb.grow()
-    order_growth = odb.get_growth_order()
-    met_dict = odb.get_metrics_dict()
-    with open(foldername + "order_growth.json", "w") as f:
-        json.dump(order_growth, f)
-    with open(foldername + "metrics_growth.json", "w") as f:
-        json.dump(met_dict, f)
+def run_and_save_orderbike(G, met, BUFF_SIZE, foldername, recompute):
+    if os.path.exists(foldername) and not recompute:
+        pass
+    else:
+        if not os.path.exists(foldername):
+            os.makedirs(foldername)
+        odb = Orderbike(
+            G,
+            preset=met,
+            buff_size=BUFF_SIZE,
+            built=True,
+            keep_connected=True,
+        )
+        odb.grow()
+        order_growth = odb.get_growth_order()
+        met_dict = odb.get_metrics_dict()
+        with open(foldername + "order_growth.json", "w") as f:
+            json.dump(order_growth, f)
+        with open(foldername + "metrics_growth.json", "w") as f:
+            json.dump(met_dict, f)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Plot the metrics in additive order of all strategies on the tested graph, chosing the medoid in AUC of Coverage and Directness as the shown trial.
+Plot the metrics in additive order of all strategies on Paris bikenet, showing the average in AUC of Coverage and Directness for multiple trials.
 """
 
 import os
