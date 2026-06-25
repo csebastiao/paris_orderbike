@@ -8,7 +8,7 @@
     "figsize":[6.18, 6.18],
     "errorbar":{
         "elinewidth":1,
-        "color":"black",
+        "color":"#454545",
         "markersize":6
     },
     "rcparams":{

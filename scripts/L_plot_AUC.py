@@ -14,7 +14,7 @@ from I_plot_lineplot import FOLDERPLOT
 
 
 def main():
-    with open("./scripts/K_plot_AUC.json", "r") as f:
+    with open("./scripts/L_plot_AUC.json", "r") as f:
         plot_params = json.load(f)
     for key in plot_params["rcparams"]:
         mpl.rcParams[key] = plot_params["rcparams"][key]
@@ -32,11 +32,17 @@ def main():
         fig, ax = plt.subplots(figsize=plot_params["figsize"])
         for ids, met in enumerate(plot_params["order"]):
             mask_met = df_growth["Metric optimized"] == met
+            if met in ["random", "road_hierarchy"]:
+                zorder = 2
+            elif met == "real":
+                zorder = 4
+            else:
+                zorder = 3
             ax.scatter(
                 df_growth[mask_met]["AUC of Directness"],
                 df_growth[mask_met]["AUC of Coverage"],
                 linewidths=0,
-                zorder=2,
+                zorder=zorder,
                 **{
                     key: val[ids]
                     for key, val in plot_params.items()
@@ -50,7 +56,7 @@ def main():
                     ]
                 },
             )
-            if met == "random":
+            if met in ["random"]:
                 xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
                 xx_std = df_growth[mask_met]["AUC of Directness"].std()
                 yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
@@ -62,6 +68,7 @@ def main():
                     xerr=xx_std,
                     fmt="o",
                     **{key: val for key, val in plot_params["errorbar"].items()},
+                    zorder=3,
                 )
         ax.set_xlabel("AUC of directness")
         ax.set_ylabel("AUC of coverage")

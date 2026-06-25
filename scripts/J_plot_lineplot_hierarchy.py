@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 from G_grow_bikenet import (
     BUFF_SIZE,
     FOLDEROOT,
+    NUM_HIER_TRIAL,
 )
 from I_plot_lineplot import FOLDERPLOT
 
@@ -46,8 +47,7 @@ def main():
         foldermet = folder_data + f"bs_{BUFF_SIZE}_{met}/"
         if met == "road_hierarchy":
             df_concat = pd.DataFrame()
-            num_step = 20  # TODO change to NUM_HIER_TRIAL later
-            for i in range(num_step):
+            for i in range(NUM_HIER_TRIAL):
                 df = pd.read_json(foldermet + f"{met}_{i:03}/metrics_growth.json")
                 df_concat = pd.concat([df_concat, df])
             df_avg = pd.DataFrame(average_x(df_concat))
@@ -77,6 +77,7 @@ def main():
                         for key, val in plot_params.items()
                         if key not in ["dpi", "figsize", "rcparams", "order"]
                     },
+                    zorder=3,
                 )
             else:
                 ax.plot(
@@ -87,6 +88,7 @@ def main():
                         for key, val in plot_params.items()
                         if key not in ["dpi", "figsize", "rcparams", "order"]
                     },
+                    zorder=2,
                 )
         ylim = ax.get_ylim()[1]
         # Add lines
@@ -105,6 +107,7 @@ def main():
                 color=COLOR_HIERARCHY[i],
                 linestyle="dashed",
                 label=ROAD_HIERARCHY[i],
+                zorder=1,
             )
         ax.set_ylim([0, ylim])
         ax.set_xlabel("Built length ($km$)")
