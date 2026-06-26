@@ -12,6 +12,7 @@ from G_grow_bikenet import (
     NUM_RAND_TRIAL,
     NUM_COV_TRIAL,
     FOLDEROOT,
+    END_FOLDERS,
 )
 
 METRIC_LIST = [
@@ -31,10 +32,7 @@ EXP_DISC = False
 
 
 def main():
-    for end_folder in [
-        "Nothing",
-        "2021",
-    ]:
+    for end_folder in END_FOLDERS:
         folder_data = FOLDEROOT + end_folder + "/"
         aucs = []
         for met in METRIC_LIST:

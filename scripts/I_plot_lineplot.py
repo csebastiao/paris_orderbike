@@ -27,12 +27,15 @@ def main():
     for end_folder in [
         "Nothing",
         "2021",
+        "2026",
     ]:
         folder_data = FOLDEROOT + end_folder + "/"
         folder_plot = FOLDERPLOT + end_folder + "/lineplot/"
         if not os.path.exists(folder_plot):
             os.makedirs(folder_plot)
         avg = {}
+        # TODO normalize by random
+        # TODO select same as for small multiples
         for met in plot_params["order"]:
             foldermet = folder_data + f"bs_{BUFF_SIZE}_{met}/"
             if met in ["random", "road_hierarchy", "bikenet_hierarchy", "coverage"]:

@@ -2,6 +2,8 @@
 """
 Plot maps of the bicycle network at different timestamps.
 """
+# TODO select 40, 120, and 200, add real growth as a row with only last 2 values shown
+# TODO remove nodes
 
 import json
 import geopandas as gpd

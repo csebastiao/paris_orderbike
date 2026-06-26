@@ -38,7 +38,8 @@ def main():
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
     for end_folder in [
         # "Nothing",
-        "2021",
+        # "2021",
+        "2026",
     ]:
         folder_data = FOLDEROOT + end_folder + "/"
         folder_plot = FOLDERPLOT + end_folder + "/growths/"

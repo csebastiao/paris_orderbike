@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 import numpy as np
-from G_grow_bikenet import FOLDEROOT
+from G_grow_bikenet import FOLDEROOT, END_FOLDERS
 from I_plot_lineplot import FOLDERPLOT
 
 
@@ -18,10 +18,7 @@ def main():
         plot_params = json.load(f)
     for key in plot_params["rcparams"]:
         mpl.rcParams[key] = plot_params["rcparams"][key]
-    for end_folder in [
-        "Nothing",
-        "2021",
-    ]:
+    for end_folder in END_FOLDERS:
         folder_data = FOLDEROOT + end_folder + "/"
         folder_plot = FOLDERPLOT + end_folder + "/AUC/"
         if not os.path.exists(folder_plot):
@@ -56,6 +53,8 @@ def main():
                     ]
                 },
             )
+            # TODO add light errorbar without cross and dot for hierarchy random
+            # TODO rename hierarchy random
             if met in ["random"]:
                 xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
                 xx_std = df_growth[mask_met]["AUC of Directness"].std()

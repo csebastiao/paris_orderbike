@@ -8,7 +8,7 @@ import json
 import networkx as nx
 import geopandas as gpd
 import momepy as mp
-from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
+from G_grow_bikenet import BUFF_SIZE, FOLDEROOT, END_FOLDERS
 from paris_orderbike.metrics import directness, coverage
 
 TIMESTAMPS = [
@@ -26,10 +26,7 @@ TIMESTAMPS = [
 
 
 def main():
-    for end_folder in [
-        "Nothing",
-        "2021",
-    ]:
+    for end_folder in END_FOLDERS:
         folder_save = FOLDEROOT + end_folder + "/"
         if not os.path.exists(folder_save):
             os.makedirs(folder_save)
@@ -38,6 +35,10 @@ def main():
         if folder_save.split("/")[-2] == "2021":
             init_edge = [
                 edge for edge in G.edges if G.edges[edge]["built_in"] == "2021-01-01"
+            ]
+        elif folder_save.split("/")[-2] == "2026":
+            init_edge = [
+                edge for edge in G.edges if G.edges[edge]["built_in"] == "2026-01-28"
             ]
         elif folder_save.split("/")[-2] == "Nothing":
             closeness = nx.closeness_centrality(G, distance="length")

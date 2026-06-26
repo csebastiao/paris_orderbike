@@ -33,6 +33,11 @@ BIKE_HIERARCHY_MAP = {
     "primary": 2,
     "secondary": 1,
 }
+END_FOLDERS = [
+    "Nothing",
+    "2021",
+    "2026",
+]
 BUFF_SIZE = 400
 NUM_RAND_TRIAL = 1000
 NUM_HIER_TRIAL = 1000
@@ -41,10 +46,7 @@ RECOMPUTE = False
 
 
 def main():
-    for end_folder in [
-        "Nothing",
-        "2021",
-    ]:
+    for end_folder in END_FOLDERS:
         folder_save = FOLDEROOT + end_folder + "/"
         if not os.path.exists(folder_save):
             os.makedirs(folder_save)
@@ -52,6 +54,10 @@ def main():
         if folder_save.split("/")[-2] == "2021":
             gdf_edges["built"] = gdf_edges["built_in"].apply(
                 lambda x: 1 if x == "2021-01-01" else 0
+            )
+        elif folder_save.split("/")[-2] == "2026":
+            gdf_edges["built"] = gdf_edges["built_in"].apply(
+                lambda x: 1 if x == "2026-01-28" else 0
             )
         elif folder_save.split("/")[-2] == "Nothing":
             G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
