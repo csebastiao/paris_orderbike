@@ -2,8 +2,6 @@
 """
 Plot maps of the bicycle network at different timestamps.
 """
-# TODO select 40, 120, and 200, add real growth as a row with only last 2 values shown
-# TODO remove nodes
 
 import json
 import geopandas as gpd
@@ -18,28 +16,22 @@ from N_plot_bikenet_single_map import FOLDERMAPS
 
 GROWTH_STRATEGIES = {
     "coverage": "Coverage",
-    "road_hierarchy_coverage": "Hierarchy (coverage)",
-    "dual_betweenness": "Dual betweenness",
-    "road_hierarchy_directness": "Hierarchy (directness)",
+    "road_hierarchy_coverage": "Hierarchy,\ncoverage",
+    "dual_betweenness": "Dual\nbetweenness",
+    "road_hierarchy_directness": "Hierarchy,\ndirectness",
     "directness": "Directness",
 }
-STAGES = [
-    50,
-    100,
-    150,
-    200,
-]
-FIGSIZE = [11.69 * len(STAGES), 8.27 * len(GROWTH_STRATEGIES)]
+FIGSIZE = [11.69 * 3, 8.27 * len(GROWTH_STRATEGIES)]
 RCPARAMS = {
     "font.size": 60,
     "font.family": "sans-serif",
     "font.sans-serif": "Arial",
-    "figure.subplot.hspace": 0.005,
 }
 LABEL_PAD = 80
-BB_PAD = 0.0002
 DPI = 300
 CHOICE = 0
+LW = 3
+COLOR_NEW = "green"
 
 
 def main():
@@ -48,14 +40,24 @@ def main():
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
     closeness = nx.closeness_centrality(G, distance="length")
     edge_closeness = {
-        edge: (closeness[edge[0]] + closeness[edge[1]]) / 2 for edge in G.edges
+        edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
+        for edge in G.edges
+        if (
+            (G.edges[edge]["highway"] == "primary")
+            & (G.edges[edge]["level"] == "primary")
+        )
     }
     init_edge = [tuple(max(edge_closeness, key=edge_closeness.get))]
+    len_beg = round(
+        gdf_edges[gdf_edges["built_in"] == "2021-01-01"]["length"].sum() / 10**3
+    )
+    len_end = round(gdf_edges[gdf_edges["built_in"] != "No"]["length"].sum() / 10**3)
+    stages = [len_beg - (len_end - len_beg), len_beg, len_end]
     for key in RCPARAMS:
         mpl.rcParams[key] = RCPARAMS[key]
-    fig, axs = plt.subplots(len(GROWTH_STRATEGIES), len(STAGES), figsize=FIGSIZE)
-    fig.tight_layout()
+    fig, axs = plt.subplots(len(GROWTH_STRATEGIES) + 1, len(stages), figsize=FIGSIZE)
     for idx_met, (met, met_name) in enumerate(GROWTH_STRATEGIES.items()):
+        idx_stage_bef = 0
         axs[idx_met][0].set_ylabel(met_name, labelpad=LABEL_PAD)
         foldermet = FOLDEROOT + f"Nothing/bs_{BUFF_SIZE}_{met}/"
         if met == "coverage":
@@ -67,22 +69,57 @@ def main():
         ]
         with open(foldermet + "metrics_growth.json") as f:
             metrics_growth = json.load(f)
-        for idx_sta, stage in enumerate(STAGES):
+        for idx_sta, stage in enumerate(stages):
             ax = axs[idx_met][idx_sta]
             # Find the stage closest to the number of kilometer chosen
             idx_stage = find_closest_value_idx(metrics_growth["xx"], stage * 10**3)
-            H = G.edge_subgraph(order_growth[: idx_stage + 2] + init_edge)
-            temp_gdf_nodes, temp_gdf_edges = mp.nx_to_gdf(H, points=True, lines=True)
-            temp_gdf_nodes.plot(ax=ax, color="black", zorder=3)
-            temp_gdf_edges.plot(ax=ax, color="black", zorder=2)
-            ax.set_xlim([bb[0] * (1 - BB_PAD), bb[2] * (1 + BB_PAD)])
-            ax.set_ylim([bb[1] * (1 - BB_PAD), bb[3] * (1 + BB_PAD)])
+            if idx_sta == 0:
+                H = G.edge_subgraph(init_edge)
+                temp_gdf_edges = mp.nx_to_gdf(H, points=False, lines=True)
+                temp_gdf_edges.plot(ax=ax, color="black", zorder=2, linewidth=LW)
+                H = G.edge_subgraph(order_growth[: idx_stage + 2])
+                temp_gdf_edges = mp.nx_to_gdf(H, points=False, lines=True)
+                temp_gdf_edges.plot(ax=ax, color=COLOR_NEW, zorder=3, linewidth=LW + 2)
+            else:
+                H = G.edge_subgraph(order_growth[: idx_stage_bef + 2])
+                temp_gdf_edges = mp.nx_to_gdf(H, points=False, lines=True)
+                temp_gdf_edges.plot(ax=ax, color="black", zorder=2, linewidth=LW)
+                H = G.edge_subgraph(order_growth[idx_stage_bef + 1 : idx_stage + 2])
+                temp_gdf_edges = mp.nx_to_gdf(H, points=False, lines=True)
+                temp_gdf_edges.plot(ax=ax, color=COLOR_NEW, zorder=3, linewidth=LW + 2)
+            idx_stage_bef = idx_stage
+            ax.set_xlim([bb[0], bb[2]])
+            ax.set_ylim([bb[1], bb[3]])
             ax.spines[:].set_visible(False)
             ax.set_xticks([])
             ax.set_yticks([])
-    for idx_sta, stage in enumerate(STAGES):
+            if idx_sta == 2:
+                gdf_edges.plot(ax=ax, color="#E0E0E0", zorder=1, linewidth=LW - 1.5)
+    axs[-1][0].set_ylabel("Real", labelpad=LABEL_PAD, multialignment="center")
+    gdf_edges[gdf_edges["built_in"] == "2021-01-01"].plot(ax=axs[-1][0], color="white")
+    gdf_edges[gdf_edges["built_in"] == "2021-01-01"].plot(
+        ax=axs[-1][1], color=COLOR_NEW, linewidth=LW + 2
+    )
+    gdf_edges[gdf_edges["built_in"] == "2021-01-01"].plot(
+        ax=axs[-1][2], color="black", linewidth=LW
+    )
+    gdf_edges[~gdf_edges["built_in"].isin(["No", "2021-01-01"])].plot(
+        ax=axs[-1][2], color=COLOR_NEW, linewidth=LW + 2
+    )
+    gdf_edges[gdf_edges["built_in"] == "No"].plot(
+        ax=axs[-1][2], color="#E0E0E0", linewidth=LW - 1.5
+    )
+    for i in range(len(stages)):
+        ax = axs[-1][i]
+        ax.set_xlim([bb[0], bb[2]])
+        ax.set_ylim([bb[1], bb[3]])
+        ax.spines[:].set_visible(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    for idx_sta, stage in enumerate(stages):
         axs[0][idx_sta].xaxis.set_label_position("top")
         axs[0][idx_sta].set_xlabel(f"${stage} km$", labelpad=LABEL_PAD)
+    fig.tight_layout()
     fig.savefig(
         FOLDERMAPS + "Growth_steps_pareto.png",
         dpi=DPI,

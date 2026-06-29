@@ -49,13 +49,12 @@ def main():
                         "figsize",
                         "rcparams",
                         "order",
-                        "errorbar",
+                        "errorbar_random",
+                        "errorbar_hierarchy",
                     ]
                 },
             )
-            # TODO add light errorbar without cross and dot for hierarchy random
-            # TODO rename hierarchy random
-            if met in ["random"]:
+            if met == "random":
                 xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
                 xx_std = df_growth[mask_met]["AUC of Directness"].std()
                 yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
@@ -66,7 +65,25 @@ def main():
                     yerr=yy_std,
                     xerr=xx_std,
                     fmt="o",
-                    **{key: val for key, val in plot_params["errorbar"].items()},
+                    **{key: val for key, val in plot_params["errorbar_random"].items()},
+                    zorder=3,
+                )
+            elif met == "road_hierarchy":
+                xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
+                xx_std = df_growth[mask_met]["AUC of Directness"].std()
+                yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
+                yy_std = df_growth[mask_met]["AUC of Coverage"].std()
+                ax.errorbar(
+                    x=xx_mean,
+                    y=yy_mean,
+                    yerr=yy_std,
+                    xerr=xx_std,
+                    fmt="None",
+                    capsize=0,
+                    **{
+                        key: val
+                        for key, val in plot_params["errorbar_hierarchy"].items()
+                    },
                     zorder=3,
                 )
         ax.set_xlabel("AUC of directness")
