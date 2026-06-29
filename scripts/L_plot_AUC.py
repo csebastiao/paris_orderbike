@@ -88,7 +88,7 @@ def main():
                 )
         ax.set_xlabel("AUC of directness")
         ax.set_ylabel("AUC of coverage")
-        savename = folder_plot + "/AUC_comparison_cov_dir"
+        savename = folder_plot + f"/AUC_plot_{end_folder}"
         # Put ticks at each 0.1
         loc = mpl.ticker.MultipleLocator(base=0.1)
         ax.xaxis.set_major_locator(loc)

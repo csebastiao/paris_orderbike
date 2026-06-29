@@ -1,10 +1,8 @@
 {
-    "order":["coverage", "directness", "betweenness", "dual_betweenness", "closeness", "dual_closeness", "random","road_hierarchy", "road_hierarchy_coverage", "road_hierarchy_directness", "real"],
-    "label":["Coverage", "Directness", "Betweenness", "Dual betweenness", "Closeness", "Dual closeness", "Random", "Hierarchical", "Hierarchical, coverage", "Hierarchical, directness", "Real"],
-    "color":["#0173b2", "#d55e00", "#029e73", "#029e73", "#cc78bc", "#cc78bc", "#949494", "#7E57C2", "#0173b2", "#d55e00", "black"],
-    "marker":["^", "s", "h", "P", "p", "X", "o", "d", "d", "d", "*"],
-    "alpha":[0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.7, 0.9, 1, 1, 1],
-    "markersize":[3, 2, 2, 2, 2, 2, 2, 2, 6, 6, 10],
+    "order":["coverage", "directness", "dual_betweenness","road_hierarchy_coverage", "road_hierarchy_directness", "real"],
+    "label":["Coverage", "Directness","Dual betweenness", "Hierarchical, coverage", "Hierarchical, directness", "Real"],
+    "color":["#0173b2", "#d55e00", "#029e73", "#0173b2", "#d55e00", "black"],
+    "marker":["^", "s", "P", "d", "d", "*"],
     "figsize":[11.69, 8.27],
     "rcparams":{
         "font.size":10,
