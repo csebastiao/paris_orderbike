@@ -57,7 +57,7 @@ def main():
             )
         elif folder_save.split("/")[-2] == "2026":
             gdf_edges["built"] = gdf_edges["built_in"].apply(
-                lambda x: 1 if x == "2026-01-28" else 0
+                lambda x: 1 if x != "No" else 0
             )
         elif folder_save.split("/")[-2] == "Nothing":
             G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)

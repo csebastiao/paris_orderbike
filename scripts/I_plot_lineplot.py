@@ -17,7 +17,16 @@ from G_grow_bikenet import (
     FOLDEROOT,
 )
 
+MARKERDIST = 0.1
+MARKERSIZE = 10
+LINEWIDTH = 2
 FOLDERPLOT = "./plots/"
+MET_PLOT = {
+    "coverage": "Coverage ($km^2$)",
+    "directness": "Directness",
+    "num_cc": "Number of components",
+    "length_lcc": "Length of LCC (km)",
+}
 
 
 def main():
@@ -58,12 +67,7 @@ def main():
                 df_avg = pd.read_json(foldermet + "metrics_growth.json")
             avg[met] = df_avg
         for normalized in [True, False]:
-            for met_plot, met_label in {
-                "coverage": "Coverage ($km^2$)",
-                "directness": "Directness",
-                "num_cc": "Number of components",
-                "length_lcc": "Length of LCC (km)",
-            }.items():
+            for met_plot, met_label in MET_PLOT.items():
                 fig, ax = plt.subplots(figsize=plot_params["figsize"])
                 if met_plot == "coverage":
                     ratio = 10**6
@@ -71,9 +75,16 @@ def main():
                     ratio = 10**3
                 else:
                     ratio = 1
-                ax.set_ylabel(met_label)
+                if normalized:
+                    ax.set_ylabel(met_label + ", normalized")
+                else:
+                    ax.set_ylabel(met_label)
                 for ids, met in enumerate(plot_params["order"]):
                     df = avg[met]
+                    if met == "real":
+                        markevery = 1
+                    else:
+                        markevery = MARKERDIST
                     if normalized:
                         val_df_normalize = [0]
                         for idx, target_x in enumerate(df["xx"][1:-1]):
@@ -109,6 +120,10 @@ def main():
                         ax.plot(
                             df["xx"] / 10**3,
                             np.array(val_df_normalize) / ratio,
+                            markevery=markevery,
+                            markersize=MARKERSIZE,
+                            linewidth=LINEWIDTH,
+                            zorder=2,
                             **{
                                 key: val[ids]
                                 for key, val in plot_params.items()
@@ -119,19 +134,37 @@ def main():
                         ax.plot(
                             df["xx"] / 10**3,
                             df[met_plot] / ratio,
+                            markevery=markevery,
+                            markersize=MARKERSIZE,
+                            linewidth=LINEWIDTH,
+                            zorder=2,
                             **{
                                 key: val[ids]
                                 for key, val in plot_params.items()
                                 if key not in ["dpi", "figsize", "rcparams", "order"]
                             },
                         )
-                if not normalized:
+                xlims = ax.get_xlim()
+                if normalized:
+                    ax.plot(
+                        xlims,
+                        [0, 0],
+                        color="lightgrey",
+                        zorder=1,
+                    )
+                else:
                     ax.plot(
                         random_df["xx"] / 10**3,
                         random_df[met_plot] / ratio,
+                        markevery=MARKERDIST,
+                        markersize=MARKERSIZE,
+                        linewidth=LINEWIDTH,
+                        marker="o",
                         color="grey",
                         label="Random",
+                        zorder=2,
                     )
+                ax.set_xlim(xlims)
                 ax.set_xlabel("Built length ($km$)")
                 ax.set_axisbelow(True)
                 fig.tight_layout()
