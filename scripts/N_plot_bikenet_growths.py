@@ -9,8 +9,8 @@ import geopandas as gpd
 import momepy as mp
 from paris_orderbike.plot import plot_growth, plot_graph
 from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
-from H_compute_real_growth_bikenet import TIMESTAMPS
-from I_plot_lineplot import FOLDERPLOT
+from H_grow_linear_real_bikenet import TIMESTAMPS
+from J_plot_lineplot import FOLDERPLOT
 
 
 BUFFER = True
@@ -26,8 +26,7 @@ MET_LIST = [
     "road_hierarchy",
     "road_hierarchy_coverage",
     "road_hierarchy_directness",
-    "bikenet_hierarchy",
-    "bikenet_hierarchy_coverage",
+    "real_random",
 ]
 CHOICE = 0
 # TODO add a way to plot also all relevant metrics below or somewhere, show the current step, and the number of kilometers built
@@ -37,8 +36,8 @@ def main():
     gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
     for end_folder in [
-        # "Nothing",
-        # "2021",
+        "Nothing",
+        "2021",
         "2026",
     ]:
         folder_data = FOLDEROOT + end_folder + "/"
@@ -50,7 +49,13 @@ def main():
             foldermetplot = folder_plot + met + "/"
             if not os.path.exists(foldermetplot):
                 os.makedirs(foldermetplot)
-            if met in ["coverage", "random", "road_hierarchy", "bikenet_hierarchy"]:
+            if met in [
+                "coverage",
+                "random",
+                "real_random",
+                "road_hierarchy",
+                "bikenet_hierarchy",
+            ]:
                 foldermet += f"{met}_{CHOICE:03}/"
             with open(foldermet + "order_growth.json") as f:
                 order_growth = json.load(f)

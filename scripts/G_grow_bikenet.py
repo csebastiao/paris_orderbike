@@ -15,13 +15,13 @@ PRESET = [
     "directness",
     "coverage",
     "hierarchy",
-    "hierarchy_coverage",
-    "hierarchy_directness",
+    "random",
     "betweenness",
     "closeness",
-    "random",
     "dual_betweenness",
     "dual_closeness",
+    "hierarchy_coverage",
+    "hierarchy_directness",
 ]
 ROAD_HIERARCHY_MAP = {
     "primary": 4,
@@ -46,45 +46,12 @@ RECOMPUTE = False
 
 
 def main():
+    gdf_raw = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
     for end_folder in END_FOLDERS:
         folder_save = FOLDEROOT + end_folder + "/"
         if not os.path.exists(folder_save):
             os.makedirs(folder_save)
-        gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
-        if folder_save.split("/")[-2] == "2021":
-            gdf_edges["built"] = gdf_edges["built_in"].apply(
-                lambda x: 1 if x == "2021-01-01" else 0
-            )
-        elif folder_save.split("/")[-2] == "2026":
-            gdf_edges["built"] = gdf_edges["built_in"].apply(
-                lambda x: 1 if x != "No" else 0
-            )
-        elif folder_save.split("/")[-2] == "Nothing":
-            G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-            closeness = nx.closeness_centrality(G, distance="length")
-            edge_closeness = {
-                edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
-                for edge in G.edges
-                if (
-                    (G.edges[edge]["highway"] == "primary")
-                    & (G.edges[edge]["level"] == "primary")
-                )
-            }
-            choice = max(edge_closeness, key=edge_closeness.get)
-            gdf_edges["built"] = gdf_edges.apply(
-                lambda df: (
-                    1
-                    if (
-                        ((df["from"] == str(choice[0])) & (df["to"] == str(choice[1])))
-                        or (
-                            (df["to"] == str(choice[0]))
-                            & (df["from"] == str(choice[1]))
-                        )
-                    )
-                    else 0
-                ),
-                axis=1,
-            )
+        gdf_edges = init_gdf(gdf_raw, end_folder)
         for met in PRESET:
             if met == "random":
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
@@ -126,6 +93,39 @@ def main():
                 G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
                 foldername = folder_save + f"bs_{BUFF_SIZE}_{met}/"
                 run_and_save_orderbike(G, met, BUFF_SIZE, foldername, RECOMPUTE)
+
+
+def init_gdf(gdf_edges, end_folder):
+    gdf = gdf_edges.copy()
+    if end_folder == "2021":
+        gdf["built"] = gdf["built_in"].apply(lambda x: 1 if x == "2021-01-01" else 0)
+    elif end_folder == "2026":
+        gdf["built"] = gdf["built_in"].apply(lambda x: 1 if x != "No" else 0)
+    elif end_folder == "Nothing":
+        G = mp.gdf_to_nx(gdf, integer_labels=False, preserve_index=True)
+        closeness = nx.closeness_centrality(G, distance="length")
+        edge_closeness = {
+            edge: (closeness[edge[0]] + closeness[edge[1]]) / 2
+            for edge in G.edges
+            if (
+                (G.edges[edge]["highway"] == "primary")
+                & (G.edges[edge]["level"] == "primary")
+                & (G.edges[edge]["built_in"] == "2021-01-01")
+            )
+        }
+        choice = max(edge_closeness, key=edge_closeness.get)
+        gdf["built"] = gdf.apply(
+            lambda df: (
+                1
+                if (
+                    ((df["from"] == str(choice[0])) & (df["to"] == str(choice[1])))
+                    or ((df["to"] == str(choice[0])) & (df["from"] == str(choice[1])))
+                )
+                else 0
+            ),
+            axis=1,
+        )
+    return gdf
 
 
 def run_and_save_orderbike(G, met, BUFF_SIZE, foldername, recompute):

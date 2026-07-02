@@ -10,11 +10,11 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 import numpy as np
 from G_grow_bikenet import FOLDEROOT, END_FOLDERS
-from I_plot_lineplot import FOLDERPLOT
+from J_plot_lineplot import FOLDERPLOT
 
 
 def main():
-    with open("./scripts/L_plot_AUC.json", "r") as f:
+    with open("./scripts/M_plot_AUC.json", "r") as f:
         plot_params = json.load(f)
     for key in plot_params["rcparams"]:
         mpl.rcParams[key] = plot_params["rcparams"][key]
@@ -129,6 +129,7 @@ def main():
         )
         for handle in lgnd.legend_handles[:-2]:
             handle._sizes = [70]
+        lgnd.legend_handles[-3]._sizes = [120]
         lgnd.legend_handles[-2]._sizes = [120]
         fig.savefig(savename)
         plt.close(fig=fig)

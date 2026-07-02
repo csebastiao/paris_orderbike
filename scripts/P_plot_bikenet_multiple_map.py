@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from G_grow_bikenet import FOLDEROOT, BUFF_SIZE
-from N_plot_bikenet_single_map import FOLDERMAPS
+from O_plot_bikenet_single_map import FOLDERMAPS
 
 
 GROWTH_STRATEGIES = {

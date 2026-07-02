@@ -3,7 +3,6 @@
     "label":["Dual betweenness"],
     "color":["#029e73"],
     "linestyle":["-"],
-    "marker":["P"],
     "figsize":[11.69, 8.27],
     "rcparams":{
         "font.size":10,

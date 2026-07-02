@@ -14,6 +14,8 @@ from G_grow_bikenet import (
     FOLDEROOT,
     END_FOLDERS,
 )
+from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
+from J_plot_lineplot import average_x
 
 METRIC_LIST = [
     "coverage",
@@ -27,6 +29,7 @@ METRIC_LIST = [
     "road_hierarchy_coverage",
     "road_hierarchy_directness",
     "real",
+    "real_random",
 ]
 EXP_DISC = False
 
@@ -66,6 +69,30 @@ def main():
                         normalize_max_auc=False,
                     )
                     aucs.append([met, i, auc_cov, auc_dir])
+            elif met == "real_random":
+                df_concat = pd.DataFrame()
+                for i in range(NUM_RAND_REAL_TRIAL):
+                    df = pd.read_json(foldermet + f"{met}_{i:03}/metrics_growth.json")
+                    df_concat = pd.concat([df_concat, df])
+                df_avg = pd.DataFrame(average_x(df_concat))
+                met_real_random_dict = df_avg.to_dict(orient="list")
+                auc_cov = auc_from_metrics_dict(
+                    met_real_random_dict,
+                    "coverage",
+                    normalize_y=True,
+                    yaxis_method="natural",
+                    exp_discounting=EXP_DISC,
+                    normalize_max_auc=False,
+                )
+                auc_dir = auc_from_metrics_dict(
+                    met_real_random_dict,
+                    "directness",
+                    normalize_y=False,
+                    max_comparison_y="one",
+                    exp_discounting=EXP_DISC,
+                    normalize_max_auc=False,
+                )
+                aucs.append([met, 0, auc_cov, auc_dir])
             else:
                 with open(foldermet + "metrics_growth.json", "r") as f:
                     met_dict = json.load(f)

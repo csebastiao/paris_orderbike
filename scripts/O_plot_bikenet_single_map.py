@@ -8,7 +8,7 @@ import geopandas as gpd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from G_grow_bikenet import FOLDEROOT
-from I_plot_lineplot import FOLDERPLOT
+from J_plot_lineplot import FOLDERPLOT
 
 FOLDERMAPS = FOLDERPLOT + "maps/"
 FIGSIZE = [11.69, 8.27]

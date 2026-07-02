@@ -26,7 +26,7 @@ TIMESTAMPS = [
 
 
 def main():
-    for end_folder in END_FOLDERS:
+    for end_folder, pos in zip(END_FOLDERS, [0, 1, -1]):
         folder_save = FOLDEROOT + end_folder + "/"
         if not os.path.exists(folder_save):
             os.makedirs(folder_save)
@@ -37,9 +37,7 @@ def main():
                 edge for edge in G.edges if G.edges[edge]["built_in"] == "2021-01-01"
             ]
         elif folder_save.split("/")[-2] == "2026":
-            init_edge = [
-                edge for edge in G.edges if G.edges[edge]["built_in"] == "2026-01-28"
-            ]
+            init_edge = [edge for edge in G.edges if G.edges[edge]["built_in"] != "No"]
         elif folder_save.split("/")[-2] == "Nothing":
             closeness = nx.closeness_centrality(G, distance="length")
             edge_closeness = {
@@ -48,6 +46,7 @@ def main():
                 if (
                     (G.edges[edge]["highway"] == "primary")
                     & (G.edges[edge]["level"] == "primary")
+                    & (G.edges[edge]["built_in"] == "2021-01-01")
                 )
             }
             init_edge = [max(edge_closeness, key=edge_closeness.get)]
@@ -57,10 +56,10 @@ def main():
         cov_real = [coverage(G_init, BUFF_SIZE)]
         num_ccs = [nx.number_connected_components(G_init)]
         length_lcc = [sum([G_init.edges[e]["length"] for e in G_init.edges])]
-        for i in range(len(TIMESTAMPS)):
-            H = G.edge_subgraph(
-                [e for e in G.edges if G.edges[e]["built_in"] in TIMESTAMPS[: i + 1]]
-            )
+        edges_time = init_edge
+        for t in TIMESTAMPS[pos:]:
+            edges_time += [e for e in G.edges if G.edges[e]["built_in"] == t]
+            H = G.edge_subgraph(edges_time)
             tot_length.append(sum([H.edges[e]["length"] for e in H.edges]))
             dir_real.append(directness(H))
             cov_real.append(coverage(H, BUFF_SIZE))
