@@ -1,8 +1,8 @@
 {
     "order":["coverage", "directness", "dual_betweenness","road_hierarchy_coverage", "road_hierarchy_directness", "real", "real_random"],
     "label":["Coverage", "Directness","Dual betweenness", "Hierarchical, coverage", "Hierarchical, directness", "Real, linear", "Real, interpolation"],
-    "color":["#0173b2", "#d55e00", "#029e73", "#0173b2", "#d55e00", "black", "pink"],
-    "linestyle":["-", "-", "-", "--", "--", "-", "--"],
+    "color":["#0173b2", "#d55e00", "#029e73", "#46afe8", "#ea914d", "black", "pink"],
+    "linestyle":["-", "-", "-", "--", ":", "-", "--"],
     "marker":["D", "s", "P", "d", "d", "*", ""],
     "figsize":[11.69, 8.27],
     "rcparams":{

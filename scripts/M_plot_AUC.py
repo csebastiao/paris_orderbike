@@ -12,6 +12,8 @@ import numpy as np
 from G_grow_bikenet import FOLDEROOT, END_FOLDERS
 from J_plot_lineplot import FOLDERPLOT
 
+"#ea914d"
+
 
 def main():
     with open("./scripts/M_plot_AUC.json", "r") as f:
