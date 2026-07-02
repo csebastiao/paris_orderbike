@@ -8,11 +8,21 @@ import json
 import pandas as pd
 import matplotlib as mpl
 from matplotlib import pyplot as plt
-import numpy as np
 from G_grow_bikenet import FOLDEROOT, END_FOLDERS
 from J_plot_lineplot import FOLDERPLOT
+from Ma_plot_AUC import is_pareto_efficient
 
-"#ea914d"
+# PLOT_LIMITS = [
+#     [[0.35, 0.9], [0.35, 0.95]],
+#     [[0.5, 0.8], [0.35, 0.95]],
+#     [[0.6, 0.85], [0.35, 0.95]],
+# ]
+
+PLOT_LIMITS = [
+    [[0.35, 0.95], [0.35, 0.95]],
+    [[0.35, 0.95], [0.35, 0.95]],
+    [[0.35, 0.95], [0.35, 0.95]],
+]
 
 
 def main():
@@ -20,7 +30,16 @@ def main():
         plot_params = json.load(f)
     for key in plot_params["rcparams"]:
         mpl.rcParams[key] = plot_params["rcparams"][key]
-    for end_folder in END_FOLDERS:
+    fig, axs = plt.subplots(
+        1,
+        3,
+        sharey="all",
+        figsize=[plot_params["figsize"][0] * 3, plot_params["figsize"][1]],
+        width_ratios=compute_width_ratios(PLOT_LIMITS),
+    )
+    savename_plot = FOLDERPLOT + "/AUC_plot_multiple.png"
+    for idx, end_folder in enumerate(END_FOLDERS):
+        ax = axs[idx]
         folder_data = FOLDEROOT + end_folder + "/"
         folder_plot = FOLDERPLOT + end_folder + "/AUC/"
         if not os.path.exists(folder_plot):
@@ -28,7 +47,6 @@ def main():
         savename = folder_data + "/auc_table_growth"
         savename += ".json"
         df_growth = pd.read_json(savename)
-        fig, ax = plt.subplots(figsize=plot_params["figsize"])
         for ids, met in enumerate(plot_params["order"]):
             mask_met = df_growth["Metric optimized"] == met
             if met in ["random", "road_hierarchy"]:
@@ -89,22 +107,23 @@ def main():
                     zorder=3,
                 )
         ax.set_xlabel("AUC of directness")
-        ax.set_ylabel("AUC of coverage")
-        savename = folder_plot + f"/AUC_plot_{end_folder}"
         # Put ticks at each 0.1
         loc = mpl.ticker.MultipleLocator(base=0.1)
         ax.xaxis.set_major_locator(loc)
         ax.yaxis.set_major_locator(loc)
-        plt.axis("square")
-        # Set rounded limits at smallest and highest 0.1
-        dirmin = df_growth["AUC of Directness"].min()
-        dirmax = df_growth["AUC of Directness"].max()
-        covmin = df_growth["AUC of Coverage"].min()
-        covmax = df_growth["AUC of Coverage"].max()
-        mmin = round(min(dirmin, covmin) - 0.05, 1)
-        mmax = round(max(dirmax, covmax) + 0.05, 1)
-        ax.set_xlim([mmin, mmax])
-        ax.set_ylim([mmin, mmax])
+        ax.set(
+            xlim=PLOT_LIMITS[idx][0],
+            ylim=PLOT_LIMITS[idx][1],
+            aspect="equal",
+            adjustable="box",
+        )
+        ax.set_title(
+            end_folder,
+            fontdict={
+                "fontweight": "bold",
+                "fontsize": plot_params["rcparams"]["font.size"] * 2,
+            },
+        )
         parfront = df_growth.copy()
         parfront = parfront[
             parfront.apply(
@@ -124,28 +143,24 @@ def main():
             zorder=1,
             label="Pareto front",
         )
-        lgnd = ax.legend(
-            prop={"size": plot_params["rcparams"]["font.size"] * 0.75},
-            labelspacing=0.75,
-            ncol=2,
-        )
-        for handle in lgnd.legend_handles[:-2]:
-            handle._sizes = [70]
-        lgnd.legend_handles[-3]._sizes = [120]
-        lgnd.legend_handles[-2]._sizes = [120]
-        fig.savefig(savename)
-        plt.close(fig=fig)
+        if idx == 0:
+            ax.set_ylabel("AUC of coverage")
+            lgnd = ax.legend(
+                prop={"size": plot_params["rcparams"]["font.size"] * 0.75},
+                labelspacing=0.75,
+                ncol=2,
+            )
+            for handle in lgnd.legend_handles[:-2]:
+                handle._sizes = [70]
+            lgnd.legend_handles[-3]._sizes = [120]
+            lgnd.legend_handles[-2]._sizes = [120]
+    fig.savefig(savename_plot)
 
 
-def is_pareto_efficient(x, df, fdim, sdim):
-    return ~np.any(df[(df[fdim] > x[fdim]) & (df[sdim] > x[sdim])])
-
-
-def average_x(df):
-    arr = []
-    for ind in set(df.index):
-        arr.append(df[df.index == ind].mean())
-    return arr
+def compute_width_ratios(lims):
+    lengths = [arr[0][1] - arr[0][0] for arr in lims]
+    total_length = sum(lengths)
+    return [le / total_length for le in lengths]
 
 
 if __name__ == "__main__":
