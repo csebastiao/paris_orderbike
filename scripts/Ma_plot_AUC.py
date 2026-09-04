@@ -64,7 +64,8 @@ def main():
                     y=yy_mean,
                     yerr=yy_std,
                     xerr=xx_std,
-                    fmt="o",
+                    fmt="None",
+                    capsize=2,
                     **{key: val for key, val in plot_params["errorbar_random"].items()},
                     zorder=3,
                 )
@@ -79,7 +80,7 @@ def main():
                     yerr=yy_std,
                     xerr=xx_std,
                     fmt="None",
-                    capsize=0,
+                    capsize=2,
                     **{
                         key: val
                         for key, val in plot_params["errorbar_hierarchy"].items()
@@ -101,6 +102,8 @@ def main():
         covmax = df_growth["AUC of Coverage"].max()
         mmin = round(min(dirmin, covmin) - 0.05, 1)
         mmax = round(max(dirmax, covmax) + 0.05, 1)
+        mmin = 0.35
+        mmax = 0.95
         ax.set_xlim([mmin, mmax])
         ax.set_ylim([mmin, mmax])
         parfront = df_growth.copy()
@@ -123,13 +126,12 @@ def main():
             label="Pareto front",
         )
         lgnd = ax.legend(
-            prop={"size": plot_params["rcparams"]["font.size"] * 0.75},
-            labelspacing=0.75,
+            prop={"size": plot_params["rcparams"]["font.size"] * 0.65},
+            labelspacing=0.65,
             ncol=2,
         )
         for handle in lgnd.legend_handles[:-2]:
             handle._sizes = [70]
-        lgnd.legend_handles[-3]._sizes = [120]
         lgnd.legend_handles[-2]._sizes = [120]
         fig.savefig(savename)
         plt.close(fig=fig)

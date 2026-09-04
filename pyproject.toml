@@ -1,6 +1,6 @@
 [project]
 authors = [{name = "Clement Sebastiao", email = "clement.sebastiao@gmail.com"}]
-dependencies = []
+dependencies = ["matplotlib-map-utils>=4.1.1,<5"]
 name = "paris_orderbike"
 requires-python = ">= 3.11"
 version = "0.1.0"

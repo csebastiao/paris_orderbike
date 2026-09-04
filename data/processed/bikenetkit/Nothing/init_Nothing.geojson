@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "init_Nothing",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::27571" } },
+"features": [
+{ "type": "Feature", "properties": { "bikenet_hierarchy": "primary", "road_hierarchy": "primary", "length": 196.58906577040386 }, "geometry": { "type": "LineString", "coordinates": [ [ 600574.931822810671292, 1128145.390234358841553 ], [ 600590.973853492178023, 1128137.696661301422864 ], [ 600690.308394309948198, 1128097.174447367433459 ], [ 600744.254647072288208, 1128075.163126674480736 ], [ 600755.483113828347996, 1128068.125516851898283 ] ] } }
+]
+}

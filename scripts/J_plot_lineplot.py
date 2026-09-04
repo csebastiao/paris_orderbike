@@ -18,8 +18,7 @@ from G_grow_bikenet import (
 )
 from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
 
-MARKERDIST = 0.1
-MARKERSIZE = 10
+MARKERSIZE = 100
 LINEWIDTH = 2
 FOLDERPLOT = "./plots/"
 MET_PLOT = {
@@ -88,15 +87,15 @@ def main():
                 else:
                     ax.set_ylabel(met_label)
                 for ids, met in enumerate(plot_params["order"]):
+                    ignore_keys = ["dpi", "figsize", "rcparams", "order"]
+                    if met == "real":
+                        ignore_keys.append("label")
                     df = avg[met]
                     if met == "real":
-                        markevery = 1
                         zorder = 4
                     elif met == "real_random":
-                        markevery = 0
                         zorder = 2
                     else:
-                        markevery = MARKERDIST
                         zorder = 3
                     if normalized:
                         val_df_normalize = [0]
@@ -130,33 +129,83 @@ def main():
                                     )
                                 )
                         val_df_normalize.append(0)
-                        ax.plot(
-                            df["xx"] / 10**3,
-                            np.array(val_df_normalize) / ratio,
-                            markevery=markevery,
-                            markersize=MARKERSIZE,
-                            linewidth=LINEWIDTH,
-                            zorder=zorder,
-                            **{
-                                key: val[ids]
-                                for key, val in plot_params.items()
-                                if key not in ["dpi", "figsize", "rcparams", "order"]
-                            },
-                        )
+                        if met == "real":
+                            ax.scatter(
+                                df["xx"] / 10**3,
+                                np.array(val_df_normalize) / ratio,
+                                s=MARKERSIZE,
+                                marker="*",
+                                zorder=zorder,
+                                **{
+                                    key: val[ids]
+                                    for key, val in plot_params.items()
+                                    if key not in ignore_keys
+                                },
+                            )
+                        elif met == "real_random":
+                            ax.plot(
+                                df["xx"] / 10**3,
+                                np.array(val_df_normalize) / ratio,
+                                linewidth=LINEWIDTH,
+                                linestyle="dashed",
+                                zorder=zorder,
+                                **{
+                                    key: val[ids]
+                                    for key, val in plot_params.items()
+                                    if key not in ignore_keys
+                                },
+                            )
+                        else:
+                            ax.plot(
+                                df["xx"] / 10**3,
+                                np.array(val_df_normalize) / ratio,
+                                linewidth=LINEWIDTH,
+                                zorder=zorder,
+                                **{
+                                    key: val[ids]
+                                    for key, val in plot_params.items()
+                                    if key not in ignore_keys
+                                },
+                            )
                     else:
-                        ax.plot(
-                            df["xx"] / 10**3,
-                            df[met_plot] / ratio,
-                            markevery=markevery,
-                            markersize=MARKERSIZE,
-                            linewidth=LINEWIDTH,
-                            zorder=zorder,
-                            **{
-                                key: val[ids]
-                                for key, val in plot_params.items()
-                                if key not in ["dpi", "figsize", "rcparams", "order"]
-                            },
-                        )
+                        if met == "real":
+                            ax.scatter(
+                                df["xx"] / 10**3,
+                                df[met_plot] / ratio,
+                                s=MARKERSIZE,
+                                marker="*",
+                                zorder=zorder,
+                                **{
+                                    key: val[ids]
+                                    for key, val in plot_params.items()
+                                    if key not in ignore_keys
+                                },
+                            )
+                        elif met == "real_random":
+                            ax.plot(
+                                df["xx"] / 10**3,
+                                df[met_plot] / ratio,
+                                linewidth=LINEWIDTH,
+                                linestyle="dashed",
+                                zorder=zorder,
+                                **{
+                                    key: val[ids]
+                                    for key, val in plot_params.items()
+                                    if key not in ignore_keys
+                                },
+                            )
+                        else:
+                            ax.plot(
+                                df["xx"] / 10**3,
+                                df[met_plot] / ratio,
+                                linewidth=LINEWIDTH,
+                                zorder=zorder,
+                                **{
+                                    key: val[ids]
+                                    for key, val in plot_params.items()
+                                    if key not in ignore_keys
+                                },
+                            )
                 xlims = ax.get_xlim()
                 if normalized:
                     ax.plot(
@@ -169,10 +218,7 @@ def main():
                     ax.plot(
                         random_df["xx"] / 10**3,
                         random_df[met_plot] / ratio,
-                        markevery=MARKERDIST,
-                        markersize=MARKERSIZE,
                         linewidth=LINEWIDTH,
-                        marker="o",
                         color="grey",
                         label="Random",
                         zorder=2,
