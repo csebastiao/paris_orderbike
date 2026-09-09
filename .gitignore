@@ -266,7 +266,8 @@ data/processed/pes_joined
 data/processed/map_matching*
 data/processed/paris_car_edges_neatified.gpkg
 plots/maps/Growth_steps_pareto*
-plots/Bikenet_growth_*
+plots/maps/Bikenet_growth_*
+plots/article/Growth_steps_pareto*
 bs*
 growths*
 *.gpkg-shm

@@ -15,7 +15,6 @@ from G_grow_bikenet import (
     END_FOLDERS,
 )
 from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
-from J_plot_lineplot import average_x
 
 METRIC_LIST = [
     "coverage",
@@ -126,6 +125,13 @@ def main():
             savename = str(folder_data) + "auc_table_growth"
             savename += ".json"
             df_growth.to_json(savename)
+
+
+def average_x(df):
+    arr = []
+    for ind in set(df.index):
+        arr.append(df[df.index == ind].mean())
+    return arr
 
 
 if __name__ == "__main__":
