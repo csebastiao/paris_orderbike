@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 Class to grow a graph.
 """
 
-import numpy as np
-import networkx as nx
 import momepy as mp
+import networkx as nx
+import numpy as np
 import shapely
+
 from .metrics import directness
 
 

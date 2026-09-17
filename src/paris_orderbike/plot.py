@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 Functions to visualize results of the growth of a graph.
 """
 
 import geopandas as gpd
-from matplotlib import pyplot as plt
 import networkx as nx
 import shapely
+from matplotlib import pyplot as plt
 
 from .utils import get_node_positions
 
@@ -192,7 +191,7 @@ def plot_graph(
         for edge in edge_color:
             if edge not in edgeidx:
                 if len(edge) == 3:
-                    reverse = tuple([edge[1], edge[0], edge[2]])
+                    reverse = (edge[1], edge[0], edge[2])
                 else:
                     reverse = tuple(reversed(edge))
                 if reverse in edgeidx:

@@ -2,13 +2,14 @@
 Copied from https://github.com/anerv/BikeDNA/blob/main/bikedna/matching_functions.py
 """
 
+import math
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import directed_hausdorff
-from shapely.ops import linemerge, substring
 from shapely.geometry import MultiLineString
-import math
+from shapely.ops import linemerge, substring
 
 
 def _get_angle(linestring1, linestring2):
@@ -152,7 +153,7 @@ def create_segment_gdf(org_gdf, segment_length):
 
     ids = []
     for i in range(1000, 1000 + len(segments_gdf)):
-        ids.append(i)
+        ids.append(i)  # noqa: PERF402
 
     segments_gdf["seg_id"] = ids
     assert len(segments_gdf["seg_id"].unique()) == len(segments_gdf)
