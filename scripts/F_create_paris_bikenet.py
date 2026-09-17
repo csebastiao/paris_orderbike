@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 From the manually cleaned file, create the simplified bicycle network of Paris.
 """
 
 import geopandas as gpd
-import osmnx as ox
 import momepy as mp
 import networkx as nx
+import osmnx as ox
 
 CRS_PARIS = "epsg:27571"
 HIGHWAY_MAP = {

@@ -1,15 +1,16 @@
-# -*- coding: utf-8 -*-
 """
 Replicate the real growth order on Paris graph.
 """
 
-import os
 import json
-import networkx as nx
+import os
+
 import geopandas as gpd
 import momepy as mp
-from G_grow_bikenet import BUFF_SIZE, FOLDEROOT, END_FOLDERS
-from paris_orderbike.metrics import directness, coverage
+import networkx as nx
+from G_grow_bikenet import BUFF_SIZE, END_FOLDERS, FOLDEROOT
+
+from paris_orderbike.metrics import coverage, directness
 
 TIMESTAMPS = [
     "2021-01-01",

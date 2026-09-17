@@ -1,20 +1,21 @@
-# -*- coding: utf-8 -*-
 """
 Script to compute the Area Under the Curve of all metrics for all strategies for all timestamps.
 """
 
 import json
+
 import pandas as pd
-from paris_orderbike.utils import auc_from_metrics_dict
 from G_grow_bikenet import (
     BUFF_SIZE,
+    END_FOLDERS,
+    FOLDEROOT,
+    NUM_COV_TRIAL,
     NUM_HIER_TRIAL,
     NUM_RAND_TRIAL,
-    NUM_COV_TRIAL,
-    FOLDEROOT,
-    END_FOLDERS,
 )
 from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
+
+from paris_orderbike.utils import auc_from_metrics_dict
 
 METRIC_LIST = [
     "coverage",

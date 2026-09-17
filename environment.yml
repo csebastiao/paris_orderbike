@@ -1,6 +1,0 @@
-name: ENVNAME
-channels:
-  - conda-forge
-dependencies:
-  - pytest
-  - pre-commit

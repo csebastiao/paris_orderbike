@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
 """
 Grow Paris bicycle network.
 """
 
+import json
+import os
+
 import geopandas as gpd
 import momepy as mp
 import networkx as nx
+
 from paris_orderbike.growth import Orderbike
-import json
-import os
 
 FOLDEROOT = "./data/processed/"
 PRESET = [

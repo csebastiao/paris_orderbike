@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 Extract the OSM graph of Paris.
 """
 
 import os
+
 import osmnx as ox
 
 FOLDEROOT = "./data/raw/"

@@ -1,20 +1,19 @@
-# -*- coding: utf-8 -*-
 """
 Plot the metrics in additive order of all strategies on Paris bikenet, showing the average in AUC of Coverage and Directness for multiple trials.
 """
 
-import pandas as pd
 import matplotlib as mpl
-from matplotlib import pyplot as plt
+import pandas as pd
 from G_grow_bikenet import (
     BUFF_SIZE,
+    FOLDEROOT,
+    NUM_COV_TRIAL,
     NUM_HIER_TRIAL,
     NUM_RAND_TRIAL,
-    NUM_COV_TRIAL,
-    FOLDEROOT,
 )
 from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
 from J_compute_AUC import average_x
+from matplotlib import pyplot as plt
 
 MARKERSIZE = 200
 MARKERSIZE_IMPORTANT = 800

@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
 """
 Plot maps of the bicycle network at different timestamps.
 """
 
 import json
+
 import geopandas as gpd
-import momepy as mp
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import momepy as mp
 import networkx as nx
 import numpy as np
-from G_grow_bikenet import FOLDEROOT, BUFF_SIZE
+from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
 from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
-
 
 GROWTH_STRATEGIES = {
     "coverage": "Coverage",
@@ -22,11 +21,13 @@ GROWTH_STRATEGIES = {
     "directness": "Directness",
 }
 FIGSIZE = [11.69, 8.27]
-RCPARAMS = {
-    "font.size": 60,
-    "font.family": "sans-serif",
-    "font.sans-serif": "Arial",
-    "figure.dpi": 300,
+PARAMS_DICT = {
+    "rcparams": {
+        "font.size": 60,
+        "font.family": "sans-serif",
+        "font.sans-serif": "Arial",
+        "figure.dpi": 300,
+    },
 }
 LABEL_PAD = 80
 CHOICE = 0
@@ -38,6 +39,8 @@ STYLES_ARR = ["removed", "added", "separated"]
 
 
 def main():
+    for key in PARAMS_DICT["rcparams"]:
+        mpl.rcParams[key] = PARAMS_DICT["rcparams"][key]
     gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
     bb = gdf_edges.total_bounds
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
@@ -57,8 +60,6 @@ def main():
     )
     len_end = round(gdf_edges[gdf_edges["built_in"] != "No"]["length"].sum() / 10**3)
     stages = [len_beg - (len_end - len_beg), len_beg, len_end]
-    for key in RCPARAMS:
-        mpl.rcParams[key] = RCPARAMS[key]
     growth_strategies = GROWTH_STRATEGIES.copy()
     growth_strategies["random"] = "Random"
     col = len(stages) + 1
@@ -74,9 +75,7 @@ def main():
             foldermet += f"{met}_042/"
         with open(foldermet + "order_growth.json") as f:
             order_growth = json.load(f)
-        order_growth = [
-            tuple((tuple(val[0]), tuple(val[1]), val[2])) for val in order_growth
-        ]
+        order_growth = [(tuple(val[0]), tuple(val[1]), val[2]) for val in order_growth]
         with open(foldermet + "metrics_growth.json") as f:
             metrics_growth = json.load(f)
         for idx_sta, stage in enumerate(stages):
@@ -203,11 +202,15 @@ def main():
         axs[0][idx_sta].set_title(f"${stage}$ km")
         if stage == 124:
             axs[-1][idx_sta].set_xlabel(
-                "2021", labelpad=LABEL_PAD, fontsize=RCPARAMS["font.size"]
+                "2021",
+                labelpad=LABEL_PAD,
+                fontsize=PARAMS_DICT["rcparams"]["font.size"],
             )
         elif stage == 200:
             axs[-1][idx_sta].set_xlabel(
-                "2026", labelpad=LABEL_PAD, fontsize=RCPARAMS["font.size"]
+                "2026",
+                labelpad=LABEL_PAD,
+                fontsize=PARAMS_DICT["rcparams"]["font.size"],
             )
     fig.tight_layout()
     filename = "Growth_steps_pareto.png"

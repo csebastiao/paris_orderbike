@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Extract the OSM graph of Paris.
 """

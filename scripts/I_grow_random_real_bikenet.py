@@ -1,16 +1,17 @@
-# -*- coding: utf-8 -*-
 """
 Replicate the real growth order on Paris graph, but assuming a disconnected random growth between timestamps.
 """
 
-import os
 import json
+import os
+
 import geopandas as gpd
 import momepy as mp
 import networkx as nx
 import numpy as np
 import shapely
-from G_grow_bikenet import BUFF_SIZE, FOLDEROOT, END_FOLDERS, init_gdf
+from G_grow_bikenet import BUFF_SIZE, END_FOLDERS, FOLDEROOT, init_gdf
+
 from paris_orderbike.metrics import directness
 
 TIMESTAMPS = [

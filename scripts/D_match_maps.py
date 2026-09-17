@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 Match the OSM data with the data from Paris en Selle. Reusing https://github.com/anerv/BikeDNA/blob/main/scripts/COMPARE/3b_extrinsic_analysis_feature_matching.ipynb.
 """
 
 import os
+
 import geopandas as gpd
+
 import paris_orderbike.map_match as match_func
 
 FOLDER_IN = "./data/raw/"
@@ -28,9 +29,7 @@ def main():
     hausdorff_threshold = 17
     angular_threshold = 30
     for s in [segment_length, buffer_dist, hausdorff_threshold, angular_threshold]:
-        assert isinstance(s, int) or isinstance(s, float), print(
-            "Settings must be integer or float values!"
-        )
+        assert isinstance(s, (int, float)), "Settings must be integer or float values!"
     osm_seg_fp = folderpath + f"osm_segments_{segment_length}.gpkg"
     ref_seg_fp = folderpath + f"ref_segments_{segment_length}.gpkg"
     if os.path.exists(osm_seg_fp) and os.path.exists(ref_seg_fp):

@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 Metrics functions natively implemented.
 """
 
+import igraph as ig
 import momepy as mp
 import numpy as np
-import igraph as ig
 import scipy
-from haversine import haversine
+
 from .utils import get_node_positions
 
 
@@ -54,23 +53,18 @@ def get_shortest_network_path_length_matrix(G, weight="length"):
     )
 
 
-def get_euclidean_distance_matrix(G, lonlat=False):
+def get_euclidean_distance_matrix(G):
     """
     Get the symmetric matrix of euclidean distance for nodes on a spatial graph G. The euclidean distance between the node i and j are in [i, j] and [j, i]. All diagonal values are 0.
 
     Args:
         G (networkx.Graph): Graph on which we want to find the euclidean distance for all pairs of nodes.
-        lonlat (bool, optional): If True, node positions are in longitude and latitude, else they are values in meters in a projection. Defaults to False.
 
     Returns:
         numpy.array: Matrix of euclidean distance for all pairs of nodes of G. Matrix with a shape (N, N), with N being the number of nodes in G
     """
     points = get_node_positions(G)
-    if lonlat:
-        dist = scipy.spatial.distance.cdist(points, points, metric=haversine)
-    else:
-        dist = scipy.spatial.distance.cdist(points, points, metric="euclidean")
-    return np.array(dist)
+    return np.array(scipy.spatial.distance.cdist(points, points, metric="euclidean"))
 
 
 def _avoid_zerodiv_matrix(num_mat, den_mat):

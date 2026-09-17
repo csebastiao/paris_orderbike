@@ -1,39 +1,41 @@
-# -*- coding: utf-8 -*-
 """
 Plot map of the bicycle network, showing either the road hierarchy next to the bicycle lanes or the time that the bicycle lane was built.
 """
 
+import json
+
 import geopandas as gpd
 import matplotlib as mpl
-from matplotlib import pyplot as plt
-from matplotlib_map_utils.core.scale_bar import scale_bar
 import momepy as mp
 import numpy as np
-import json
-from G_grow_bikenet import FOLDEROOT, BUFF_SIZE
+from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
 from H_grow_linear_real_bikenet import TIMESTAMPS
 from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
+from matplotlib import pyplot as plt
+from matplotlib_map_utils.core.scale_bar import scale_bar
 
 FIGSIZE = [11.69 * 3, 8.27]
 TITLES = ["Real", "Hierarchy, coverage", "Dual Betweenness"]
-RCPARAMS = {
-    "font.size": 25,
-    "font.family": "sans-serif",
-    "font.sans-serif": "Arial",
-    "legend.loc": "upper left",
-    "legend.frameon": False,
-    "figure.dpi": 200,
+PARAMS_DICT = {
+    "rcparams": {
+        "font.size": 25,
+        "font.family": "sans-serif",
+        "font.sans-serif": "Arial",
+        "legend.loc": "upper left",
+        "legend.frameon": False,
+        "figure.dpi": 200,
+    },
 }
 COLOR_OLD = "black"
 COLOR_NEW = "black"
 
 
 def main():
+    for key in PARAMS_DICT["rcparams"]:
+        mpl.rcParams[key] = PARAMS_DICT["rcparams"][key]
     gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
     size_int = gdf_edges[gdf_edges["built_in"].isin(TIMESTAMPS[:-1])]["length"].sum()
     G = mp.gdf_to_nx(gdf_edges, integer_labels=False, preserve_index=True)
-    for key in RCPARAMS:
-        mpl.rcParams[key] = RCPARAMS[key]
     fig, axs = plt.subplots(1, 3, figsize=FIGSIZE)
     for idx, met in enumerate(["real", "road_hierarchy_coverage", "dual_betweenness"]):
         ax = axs[idx]
@@ -53,7 +55,7 @@ def main():
                 },
                 labels={
                     "style": "first_last",
-                    "fontsize": RCPARAMS["font.size"],
+                    "fontsize": PARAMS_DICT["rcparams"]["font.size"],
                     "sep": 0.05,
                 },
             )
@@ -70,7 +72,7 @@ def main():
             with open(foldermet + "order_growth.json") as f:
                 order_growth = json.load(f)
             order_growth = [
-                tuple((tuple(val[0]), tuple(val[1]), val[2])) for val in order_growth
+                (tuple(val[0]), tuple(val[1]), val[2]) for val in order_growth
             ]
             with open(foldermet + "metrics_growth.json") as f:
                 metrics_growth = json.load(f)

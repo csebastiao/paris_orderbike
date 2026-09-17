@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 """
 Plot the AUC in additive order of all strategies on the tested graphs.
 """
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
-from matplotlib import pyplot as plt
 from G_grow_bikenet import FOLDEROOT
 from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
+from matplotlib import pyplot as plt
 
 END_FOLDERS = [
     "2021",
@@ -179,7 +178,10 @@ def main():
         parfront = parfront[
             parfront.apply(
                 lambda x: is_pareto_efficient(
-                    x, parfront, "AUC of Coverage", "AUC of Directness"
+                    x,
+                    parfront,  # noqa: B023
+                    "AUC of Coverage",
+                    "AUC of Directness",
                 ),
                 axis=1,
             )
