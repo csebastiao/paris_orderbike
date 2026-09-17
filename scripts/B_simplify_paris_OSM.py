@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Simplify the OSM graph of Paris using neatnet.
 """

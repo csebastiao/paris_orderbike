@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Process the manually joined layers of Paris en Selle data.
 """
