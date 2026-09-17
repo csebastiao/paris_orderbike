@@ -13,8 +13,8 @@ END_FOLDERS = [
     "2021",
     "2026",
 ]
-PLOT_Y = [0.35, 0.95]
-PLOT_X = [0.55, 0.85]
+PLOT_Y = [0.39, 0.95]
+PLOT_X = [0.55, 0.83]
 PARAMS_DICT = {
     "order": [
         "coverage",
@@ -98,7 +98,7 @@ def main():
     savename_plot = FOLDERPLOT + "AUC_2021_2026.png"
     for idx, end_folder in enumerate(END_FOLDERS):
         ax = axs[idx]
-        ax.set_title(end_folder, y=0.975, fontweight=900)
+        ax.set_title(f"From {end_folder}", y=0.975, fontweight=700)
         folder_data = FOLDEROOT + end_folder + "/"
         savename = folder_data + "/auc_table_growth"
         savename += ".json"
@@ -208,6 +208,8 @@ def main():
         labelspacing=0.5,
         ncol=4,
     )
+    for handle in lgnd.legend_handles:
+        handle._alpha = 1
     for handle in lgnd.legend_handles[:-2]:
         handle._sizes = [80]
     lgnd.legend_handles[-2]._sizes = [140]

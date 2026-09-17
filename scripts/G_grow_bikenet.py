@@ -13,16 +13,16 @@ from paris_orderbike.growth import Orderbike
 
 FOLDEROOT = "./data/processed/"
 PRESET = [
-    "directness",
+    # "directness",
     "coverage",
-    "hierarchy",
-    "random",
-    "betweenness",
-    "closeness",
-    "dual_betweenness",
-    "dual_closeness",
+    # "hierarchy",
+    # "random",
+    # "betweenness",
+    # "closeness",
+    # "dual_betweenness",
+    # "dual_closeness",
     "hierarchy_coverage",
-    "hierarchy_directness",
+    # "hierarchy_directness",
 ]
 ROAD_HIERARCHY_MAP = {
     "primary": 4,
@@ -39,7 +39,7 @@ END_FOLDERS = [
     "2021",
     "2026",
 ]
-BUFF_SIZE = 400
+BUFF_SIZE = 500
 NUM_RAND_TRIAL = 1000
 NUM_HIER_TRIAL = 1000
 NUM_COV_TRIAL = 20

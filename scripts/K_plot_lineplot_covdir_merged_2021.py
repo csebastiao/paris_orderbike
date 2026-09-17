@@ -49,9 +49,9 @@ PARAMS_DICT = {
         "#46afe8",
         "#ea914d",
         "black",
-        "dimgrey",
+        "#B0B0B0",
     ],
-    "figsize": [11.69, 8.27 * 2],
+    "figsize": [11.69 * 2, 8.27],
     "rcparams": {
         "font.size": 20,
         "font.family": "sans-serif",
@@ -105,7 +105,7 @@ def main():
         else:
             df_avg = pd.read_json(foldermet + "metrics_growth.json")
         avg[met] = df_avg
-    fig, axs = plt.subplots(2, 1, figsize=PARAMS_DICT["figsize"], sharex="col")
+    fig, axs = plt.subplots(1, 2, figsize=PARAMS_DICT["figsize"], sharex="col")
     for idx, (met_plot, met_label) in enumerate(MET_PLOT.items()):
         ax = axs[idx]
         if met_plot == "coverage":
@@ -162,7 +162,7 @@ def main():
                             ),
                             xytext=offset,
                             textcoords="offset points",
-                            fontweight=900,
+                            fontweight=700,
                             color="black",
                             ha="center",
                             va="center",
@@ -197,7 +197,7 @@ def main():
             random_df["xx"] / 10**3,
             random_df[met_plot] / ratio,
             linewidth=LINEWIDTH,
-            color="grey",
+            color="#949494",
             label="Random",
             zorder=2,
         )
@@ -205,9 +205,9 @@ def main():
         ax.set_xlabel("Built length ($km$)")
         ax.set_axisbelow(True)
     fig.tight_layout()
-    axs[0].legend()
-    axs[0].set_xlabel("")
-    fig.savefig(FOLDERPLOT + "/2021_lineplot_merged.png")
+    axs[1].legend()
+    # axs[0].set_xlabel("")
+    fig.savefig(FOLDERPLOT + "/2021_lineplot_merged.png", pad_inches=0.05)
     plt.close(fig=fig)
 
 

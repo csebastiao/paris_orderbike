@@ -30,7 +30,7 @@ def directness(G):
 def get_directness_matrix(G, lonlat=False, weight="length"):
     """Get the symmetrical directness matrix of a graph G. If lonlat is True, node positions are in geographic CRS."""
     return _avoid_zerodiv_matrix(
-        get_euclidean_distance_matrix(G, lonlat=lonlat),
+        get_euclidean_distance_matrix(G),
         get_shortest_network_path_length_matrix(G, weight=weight),
     )
 
