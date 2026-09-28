@@ -8,12 +8,13 @@ import geopandas as gpd
 import matplotlib as mpl
 import momepy as mp
 import numpy as np
-from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
+from G_grow_bikenet import FOLDEROOT
 from H_grow_linear_real_bikenet import TIMESTAMPS
 from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
 from matplotlib import pyplot as plt
 from matplotlib_map_utils.core.scale_bar import scale_bar
 
+BUFF_SIZE = 400
 FIGSIZE = [11.69 * 3, 8.27]
 TITLES = ["Real", "Hierarchy, coverage", "Dual Betweenness"]
 PARAMS_DICT = {

@@ -10,9 +10,10 @@ import matplotlib.pyplot as plt
 import momepy as mp
 import networkx as nx
 import numpy as np
-from G_grow_bikenet import BUFF_SIZE, FOLDEROOT
+from G_grow_bikenet import FOLDEROOT
 from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
 
+BUFF_SIZE = 400
 GROWTH_STRATEGIES = {
     "coverage": "Coverage",
     "road_hierarchy_coverage": "Hierarchy,\ncoverage",

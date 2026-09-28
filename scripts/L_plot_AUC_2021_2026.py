@@ -13,8 +13,6 @@ END_FOLDERS = [
     "2021",
     "2026",
 ]
-PLOT_Y = [0.39, 0.95]
-PLOT_X = [0.55, 0.83]
 PARAMS_DICT = {
     "order": [
         "coverage",
@@ -81,140 +79,152 @@ PARAMS_DICT = {
         "errorbar.capsize": 4,
     },
 }
-
-# TODO add title
-# TODO add horizontal legend
+PLOT_LIMS_DICT = {
+    100: ([0.55, 0.85], [0.35, 0.65]),
+    200: ([0.45, 0.83], [0.34, 0.78]),
+    300: ([0.51, 0.83], [0.34, 0.88]),
+    400: ([0.55, 0.83], [0.39, 0.95]),
+    500: ([0.55, 0.83], [0.34, 0.99]),
+    600: ([0.55, 0.83], [0.42, 1.0]),
+    700: ([0.55, 0.83], [0.22, 1.0]),
+    800: ([0.55, 0.83], [0.22, 1.0]),
+}
 
 
 def main():
     for key in PARAMS_DICT["rcparams"]:
         mpl.rcParams[key] = PARAMS_DICT["rcparams"][key]
-    fig, axs = plt.subplots(
-        1,
-        2,
-        sharey="all",
-        figsize=PARAMS_DICT["figsize"],
-    )
-    savename_plot = FOLDERPLOT + "AUC_2021_2026.png"
-    for idx, end_folder in enumerate(END_FOLDERS):
-        ax = axs[idx]
-        ax.set_title(f"From {end_folder}", y=0.975, fontweight=700)
-        folder_data = FOLDEROOT + end_folder + "/"
-        savename = folder_data + "/auc_table_growth"
-        savename += ".json"
-        df_growth = pd.read_json(savename)
-        for ids, met in enumerate(PARAMS_DICT["order"]):
-            mask_met = df_growth["Metric optimized"] == met
-            if met in ["random", "road_hierarchy"]:
-                zorder = 2
-            elif met == "real":
-                zorder = 4
-            else:
-                zorder = 3
-            ax.scatter(
-                df_growth[mask_met]["AUC of Directness"],
-                df_growth[mask_met]["AUC of Coverage"],
-                linewidths=0,
-                zorder=zorder,
-                **{
-                    key: val[ids]
-                    for key, val in PARAMS_DICT.items()
-                    if key
-                    not in [
-                        "dpi",
-                        "figsize",
-                        "rcparams",
-                        "order",
-                        "errorbar_random",
-                        "errorbar_hierarchy",
-                    ]
-                },
-            )
-            if met == "random":
-                xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
-                xx_std = df_growth[mask_met]["AUC of Directness"].std()
-                yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
-                yy_std = df_growth[mask_met]["AUC of Coverage"].std()
-                ax.errorbar(
-                    x=xx_mean,
-                    y=yy_mean,
-                    yerr=yy_std,
-                    xerr=xx_std,
-                    fmt="None",
-                    capsize=2,
-                    **{key: val for key, val in PARAMS_DICT["errorbar_random"].items()},
-                    zorder=3,
-                )
-            elif met == "road_hierarchy":
-                xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
-                xx_std = df_growth[mask_met]["AUC of Directness"].std()
-                yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
-                yy_std = df_growth[mask_met]["AUC of Coverage"].std()
-                ax.errorbar(
-                    x=xx_mean,
-                    y=yy_mean,
-                    yerr=yy_std,
-                    xerr=xx_std,
-                    fmt="None",
-                    capsize=2,
+    for buffer_size in [100, 200, 300, 400, 500, 600, 700, 800]:
+        plot_x, plot_y = PLOT_LIMS_DICT[buffer_size]
+        fig, axs = plt.subplots(
+            1,
+            2,
+            sharey="all",
+            figsize=PARAMS_DICT["figsize"],
+        )
+        savename_plot = FOLDERPLOT + f"AUC_2021_2026_bs_{buffer_size}.png"
+        for idx, end_folder in enumerate(END_FOLDERS):
+            ax = axs[idx]
+            ax.set_title(f"From {end_folder}", y=0.975, fontweight=700)
+            folder_data = FOLDEROOT + end_folder + "/"
+            savename = folder_data + f"/auc_table_growth_bs_{buffer_size}"
+            savename += ".json"
+            df_growth = pd.read_json(savename)
+            for ids, met in enumerate(PARAMS_DICT["order"]):
+                mask_met = df_growth["Metric optimized"] == met
+                if met in ["random", "road_hierarchy"]:
+                    zorder = 2
+                elif met == "real":
+                    zorder = 4
+                else:
+                    zorder = 3
+                ax.scatter(
+                    df_growth[mask_met]["AUC of Directness"],
+                    df_growth[mask_met]["AUC of Coverage"],
+                    linewidths=0,
+                    zorder=zorder,
                     **{
-                        key: val
-                        for key, val in PARAMS_DICT["errorbar_hierarchy"].items()
+                        key: val[ids]
+                        for key, val in PARAMS_DICT.items()
+                        if key
+                        not in [
+                            "dpi",
+                            "figsize",
+                            "rcparams",
+                            "order",
+                            "errorbar_random",
+                            "errorbar_hierarchy",
+                        ]
                     },
-                    zorder=3,
                 )
-        ax.set_xlabel("AUC of directness")
-        # Put ticks at each 0.1
-        loc = mpl.ticker.MultipleLocator(base=0.1)
-        ax.xaxis.set_major_locator(loc)
-        ax.yaxis.set_major_locator(loc)
-        ax.set(
-            xlim=PLOT_X,
-            ylim=PLOT_Y,
-            aspect="equal",
-            adjustable="box",
-        )
-        parfront = df_growth.copy()
-        parfront = parfront[
-            parfront.apply(
-                lambda x: is_pareto_efficient(
-                    x,
-                    parfront,  # noqa: B023
-                    "AUC of Coverage",
-                    "AUC of Directness",
-                ),
-                axis=1,
+                if met == "random":
+                    xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
+                    xx_std = df_growth[mask_met]["AUC of Directness"].std()
+                    yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
+                    yy_std = df_growth[mask_met]["AUC of Coverage"].std()
+                    ax.errorbar(
+                        x=xx_mean,
+                        y=yy_mean,
+                        yerr=yy_std,
+                        xerr=xx_std,
+                        fmt="None",
+                        capsize=2,
+                        **{
+                            key: val
+                            for key, val in PARAMS_DICT["errorbar_random"].items()
+                        },
+                        zorder=3,
+                    )
+                elif met == "road_hierarchy":
+                    xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
+                    xx_std = df_growth[mask_met]["AUC of Directness"].std()
+                    yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
+                    yy_std = df_growth[mask_met]["AUC of Coverage"].std()
+                    ax.errorbar(
+                        x=xx_mean,
+                        y=yy_mean,
+                        yerr=yy_std,
+                        xerr=xx_std,
+                        fmt="None",
+                        capsize=2,
+                        **{
+                            key: val
+                            for key, val in PARAMS_DICT["errorbar_hierarchy"].items()
+                        },
+                        zorder=3,
+                    )
+            ax.set_xlabel("AUC of directness")
+            # Put ticks at each 0.1
+            loc = mpl.ticker.MultipleLocator(base=0.1)
+            ax.xaxis.set_major_locator(loc)
+            ax.yaxis.set_major_locator(loc)
+            ax.set(
+                xlim=plot_x,
+                ylim=plot_y,
+                aspect="equal",
+                adjustable="box",
             )
-        ]
-        parfront.sort_values("AUC of Directness", axis=0, inplace=True)
-        ax.plot(
-            parfront["AUC of Directness"],
-            parfront["AUC of Coverage"],
-            linestyle="dashed",
-            linewidth=1,
-            color="black",
-            zorder=1,
-            label="Pareto front",
+            parfront = df_growth.copy()
+            parfront = parfront[
+                parfront.apply(
+                    lambda x: is_pareto_efficient(
+                        x,
+                        parfront,  # noqa: B023
+                        "AUC of Coverage",
+                        "AUC of Directness",
+                    ),
+                    axis=1,
+                )
+            ]
+            parfront.sort_values("AUC of Directness", axis=0, inplace=True)
+            ax.plot(
+                parfront["AUC of Directness"],
+                parfront["AUC of Coverage"],
+                linestyle="dashed",
+                linewidth=1,
+                color="black",
+                zorder=1,
+                label="Pareto front",
+            )
+            if idx == 0:
+                ax.set_ylabel("AUC of coverage")
+        handles, labels = plt.gca().get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        lgnd = fig.legend(
+            by_label.values(),
+            by_label.keys(),
+            loc="outside upper center",
+            prop={"size": PARAMS_DICT["rcparams"]["font.size"] * 0.9},
+            labelspacing=0.5,
+            ncol=4,
         )
-        if idx == 0:
-            ax.set_ylabel("AUC of coverage")
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    lgnd = fig.legend(
-        by_label.values(),
-        by_label.keys(),
-        loc="outside upper center",
-        prop={"size": PARAMS_DICT["rcparams"]["font.size"] * 0.9},
-        labelspacing=0.5,
-        ncol=4,
-    )
-    for handle in lgnd.legend_handles:
-        handle._alpha = 1
-    for handle in lgnd.legend_handles[:-2]:
-        handle._sizes = [80]
-    lgnd.legend_handles[-2]._sizes = [140]
-    fig.subplots_adjust(wspace=-0.3)
-    fig.savefig(savename_plot, bbox_inches="tight", pad_inches=0)
+        for handle in lgnd.legend_handles:
+            handle._alpha = 1
+        for handle in lgnd.legend_handles[:-2]:
+            handle._sizes = [80]
+        lgnd.legend_handles[-2]._sizes = [140]
+        fig.subplots_adjust(wspace=-0.3)
+        fig.savefig(savename_plot, bbox_inches="tight", pad_inches=0)
 
 
 def is_pareto_efficient(x, df, fdim, sdim):
