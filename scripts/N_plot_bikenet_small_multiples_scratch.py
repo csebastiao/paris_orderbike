@@ -178,7 +178,11 @@ def main():
         capstyle="round",
         joinstyle="round",
     )
-    axs[0][3].set_title("Missing")
+    axs[0][3].set_title(
+        "Missing 100 km",
+        fontsize=PARAMS_DICT["rcparams"]["font.size"] * 1.3,
+        fontweight=700,
+    )
     ax = axs[-1][3]
     ax.set_xlim([bb[0], bb[2]])
     ax.set_ylim([bb[1], bb[3]])
@@ -200,18 +204,24 @@ def main():
         ax.set_xticks([])
         ax.set_yticks([])
     for idx_sta, stage in enumerate(stages):
-        axs[0][idx_sta].set_title(f"${stage}$ km")
+        axs[0][idx_sta].set_title(
+            f"{stage} km",
+            fontsize=PARAMS_DICT["rcparams"]["font.size"] * 1.3,
+            fontweight=700,
+        )
         if stage == 124:
             axs[-1][idx_sta].set_xlabel(
                 "2021",
                 labelpad=LABEL_PAD,
-                fontsize=PARAMS_DICT["rcparams"]["font.size"],
+                fontsize=PARAMS_DICT["rcparams"]["font.size"] * 1.3,
+                fontweight=700,
             )
         elif stage == 200:
             axs[-1][idx_sta].set_xlabel(
                 "2026",
                 labelpad=LABEL_PAD,
-                fontsize=PARAMS_DICT["rcparams"]["font.size"],
+                fontsize=PARAMS_DICT["rcparams"]["font.size"] * 1.3,
+                fontweight=700,
             )
     fig.tight_layout()
     filename = "Growth_steps_pareto.png"

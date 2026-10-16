@@ -461,6 +461,4 @@ class Orderbike:
             self.hierarchy_level = self.hierarchy_level - 1
 
     def main_random(self):
-        edgelist = list(self.G.edges)
-        self.random_generator.shuffle(edgelist)
-        return {key: -idx for idx, key in enumerate(edgelist)}
+        return {key: 0 for key in list(self.G.edges)}

@@ -44,7 +44,7 @@ PARAMS_DICT = {
     "color": [
         "#0173b2",
         "#d55e00",
-        "#029e73",
+        "#017856",
         "#46afe8",
         "#ea914d",
         "black",
@@ -52,7 +52,7 @@ PARAMS_DICT = {
     ],
     "figsize": [11.69 * 2, 8.27],
     "rcparams": {
-        "font.size": 20,
+        "font.size": 23,
         "font.family": "sans-serif",
         "font.sans-serif": "Arial",
         "axes.grid": "False",
@@ -75,7 +75,16 @@ def main():
     for key in PARAMS_DICT["rcparams"]:
         mpl.rcParams[key] = PARAMS_DICT["rcparams"][key]
     folder_data = FOLDEROOT + "2021/"
-    for buffer_size in [100, 200, 300, 400, 500, 600, 700, 800]:
+    for buffer_size in [
+        # 100,
+        # 200,
+        # 300,
+        400,
+        # 500,
+        # 600,
+        # 700,
+        # 800,
+    ]:
         avg = {}
         df_concat = pd.DataFrame()
         for i in range(NUM_RAND_TRIAL):

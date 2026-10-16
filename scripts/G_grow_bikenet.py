@@ -14,14 +14,14 @@ from paris_orderbike.growth import Orderbike
 FOLDEROOT = "./data/processed/"
 PRESET = [
     # "directness",
-    "coverage",
+    # "coverage",
     # "hierarchy",
-    # "random",
+    "random",
     # "betweenness",
     # "closeness",
     # "dual_betweenness",
     # "dual_closeness",
-    "hierarchy_coverage",
+    # "hierarchy_coverage",
     # "hierarchy_directness",
 ]
 ROAD_HIERARCHY_MAP = {
@@ -39,12 +39,10 @@ END_FOLDERS = [
     "2021",
     "2026",
 ]
-BUFF_SIZE = 500
 NUM_RAND_TRIAL = 1000
 NUM_HIER_TRIAL = 1000
 NUM_COV_TRIAL = 20
 RECOMPUTE = False
-# TODO other buffer sizes 200 300 600 100
 
 
 def main():
@@ -54,7 +52,16 @@ def main():
         if not os.path.exists(folder_save):
             os.makedirs(folder_save)
         gdf_edges = init_gdf(gdf_raw, end_folder)
-        for buffer_size in [100, 200, 300, 600, 700, 800]:
+        for buffer_size in [
+            # 100,
+            # 200,
+            # 300,
+            400,
+            # 500,
+            # 600,
+            # 700,
+            # 800,
+        ]:
             for met in PRESET:
                 if met == "random":
                     G = mp.gdf_to_nx(
