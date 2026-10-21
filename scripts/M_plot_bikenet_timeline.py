@@ -4,9 +4,9 @@ Plot map of the bicycle network timeline.
 
 import geopandas as gpd
 import matplotlib as mpl
-from G_grow_bikenet import FOLDEROOT
+from Ga_grow_bikenet import FOLDEROOT
 from H_grow_linear_real_bikenet import TIMESTAMPS
-from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
+from Ka_plot_lineplot_covdir_merged_2021_main import FOLDERPLOT_MAIN
 from matplotlib import pyplot as plt
 from matplotlib_map_utils.core.scale_bar import scale_bar
 
@@ -19,7 +19,7 @@ LINEWIDTHS_HIERARCHY = [
 ]
 PARAMS_DICT = {
     "rcparams": {
-        "font.size": 15,
+        "font.size": 20,
         "font.family": "sans-serif",
         "font.sans-serif": "Arial",
         "legend.loc": "upper left",
@@ -38,21 +38,21 @@ def main():
         mpl.rcParams[key] = PARAMS_DICT["rcparams"][key]
     gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
     fig, ax = plt.subplots(figsize=FIGSIZE)
-    gdf_edges[gdf_edges["built_in"] == TIMESTAMPS[0]].plot(
-        ax=ax,
-        color=COLOR_OLD,
-        linewidth=3,
-        label="Built by 2021",
-        zorder=4,
-        capstyle="round",
-        joinstyle="round",
-    )
     gdf_edges[gdf_edges["built_in"].isin(TIMESTAMPS[1:-1])].plot(
         ax=ax,
         color=COLOR_NEW,
         linewidth=5,
         label="Built from 2021 to 2026",
         zorder=5,
+        capstyle="round",
+        joinstyle="round",
+    )
+    gdf_edges[gdf_edges["built_in"] == TIMESTAMPS[0]].plot(
+        ax=ax,
+        color=COLOR_OLD,
+        linewidth=3,
+        label="Built by 2021",
+        zorder=4,
         capstyle="round",
         joinstyle="round",
     )
@@ -74,18 +74,20 @@ def main():
             "unit": "km",
             "major_mult": 1,
             "major_div": 3,
-            "height": 0.1,
+            "height": 0.2,
         },
+        aob={"bbox_to_anchor": (-0.1, 0), "bbox_transform": ax.transAxes},
+        units={"fontsize": PARAMS_DICT["rcparams"]["font.size"]},
         labels={
             "style": "first_last",
             "fontsize": PARAMS_DICT["rcparams"]["font.size"],
             "sep": 0.05,
         },
     )
-    ax.legend()
+    ax.legend(fontsize=PARAMS_DICT["rcparams"]["font.size"], bbox_to_anchor=(-0.1, 1))
     ax.axis("off")
     fig.savefig(
-        FOLDERPLOT + "Bikenet_timeline.png",
+        FOLDERPLOT_MAIN + "Bikenet_timeline.png",
         bbox_inches="tight",
         pad_inches=0,
     )

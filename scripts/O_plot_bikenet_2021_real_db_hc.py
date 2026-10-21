@@ -8,18 +8,18 @@ import geopandas as gpd
 import matplotlib as mpl
 import momepy as mp
 import numpy as np
-from G_grow_bikenet import FOLDEROOT
+from Ga_grow_bikenet import FOLDEROOT
 from H_grow_linear_real_bikenet import TIMESTAMPS
-from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
+from Ka_plot_lineplot_covdir_merged_2021_main import FOLDERPLOT_MAIN
 from matplotlib import pyplot as plt
 from matplotlib_map_utils.core.scale_bar import scale_bar
 
 BUFF_SIZE = 400
 FIGSIZE = [11.69 * 3, 8.27]
-TITLES = ["Real", "Hierarchy, coverage", "Dual Betweenness"]
+TITLES = ["Empirical", "Hierarchy-coverage", "Dual betweenness"]
 PARAMS_DICT = {
     "rcparams": {
-        "font.size": 25,
+        "font.size": 40,
         "font.family": "sans-serif",
         "font.sans-serif": "Arial",
         "legend.loc": "upper left",
@@ -46,17 +46,19 @@ def main():
             scale_bar(
                 ax,
                 location="lower left",
+                aob={"bbox_to_anchor": (-0.06, -0.08), "bbox_transform": ax.transAxes},
                 style="ticks",
                 bar={
                     "projection": gdf_edges.crs,
                     "unit": "km",
                     "major_mult": 1,
                     "major_div": 3,
-                    "height": 0.1,
+                    "height": 0.2,
                 },
+                units={"fontsize": PARAMS_DICT["rcparams"]["font.size"] * 0.8},
                 labels={
                     "style": "first_last",
-                    "fontsize": PARAMS_DICT["rcparams"]["font.size"],
+                    "fontsize": PARAMS_DICT["rcparams"]["font.size"] * 0.8,
                     "sep": 0.05,
                 },
             )
@@ -97,11 +99,11 @@ def main():
                 joinstyle="round",
             )
             ax.axis("off")
-    fig.subplots_adjust(wspace=-0.2)
+    fig.subplots_adjust(wspace=-0.075)
     fig.savefig(
-        FOLDERPLOT + "Bikenet_2021_real_hc_db.png",
+        FOLDERPLOT_MAIN + "Bikenet_2021_real_hc_db.png",
         bbox_inches="tight",
-        pad_inches=0,
+        pad_inches=0.06,
     )
     plt.close(fig=fig)
 

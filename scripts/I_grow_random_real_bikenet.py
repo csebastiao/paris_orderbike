@@ -10,7 +10,7 @@ import momepy as mp
 import networkx as nx
 import numpy as np
 import shapely
-from G_grow_bikenet import BUFF_SIZE, END_FOLDERS, FOLDEROOT, init_gdf
+from Ga_grow_bikenet import END_FOLDERS, FOLDEROOT, init_gdf
 
 from paris_orderbike.metrics import directness
 
@@ -33,45 +33,63 @@ SEED = None
 
 
 def main():
-    rng = np.random.default_rng(seed=SEED)
-    gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
-    # Find initial edge if from scratch and remove it from the list of edges to shuffle
-    gdf_nothing_edges = init_gdf(gdf_edges, "Nothing")
-    G = mp.gdf_to_nx(gdf_nothing_edges, integer_labels=False, preserve_index=True)
-    edges_t = {
-        t: np.array(
-            [
-                tuple(edge)
-                for edge in G.edges
-                if ((G.edges[edge]["built_in"] == t) & (G.edges[edge]["built"] == 0))
-            ],
-            dtype=object,
-        )
-        for t in TIMESTAMPS
-    }
-    for end_folder, pos in zip(END_FOLDERS, [0, 1, -1]):
-        gdf_time_edges = init_gdf(gdf_edges, end_folder)
-        G_time = mp.gdf_to_nx(gdf_time_edges, integer_labels=False, preserve_index=True)
-        folder_save = FOLDEROOT + end_folder + "/"
-        if not os.path.exists(folder_save):
-            os.makedirs(folder_save)
-        for i in range(NUM_RAND_REAL_TRIAL):
-            foldername = folder_save + f"bs_{BUFF_SIZE}_real_random/real_random_{i:03}/"
-            if os.path.exists(foldername) and not RECOMPUTE:
-                pass
-            else:
-                if not os.path.exists(foldername):
-                    os.makedirs(foldername)
-                order_growth = [
-                    tuple(val)
-                    for arr in [rng.permutation(edges_t[t]) for t in TIMESTAMPS[pos:]]
-                    for val in arr
-                ]
-                met_dict = compute_metrics(G_time, order_growth, BUFF_SIZE)
-                with open(foldername + "order_growth.json", "w") as f:
-                    json.dump(order_growth, f)
-                with open(foldername + "metrics_growth.json", "w") as f:
-                    json.dump(met_dict, f)
+    for buffer_size in [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+    ]:
+        rng = np.random.default_rng(seed=SEED)
+        gdf_edges = gpd.read_file(FOLDEROOT + "bikenet_edges.gpkg")
+        # Find initial edge if from scratch and remove it from the list of edges to shuffle
+        gdf_nothing_edges = init_gdf(gdf_edges, "Nothing")
+        G = mp.gdf_to_nx(gdf_nothing_edges, integer_labels=False, preserve_index=True)
+        edges_t = {
+            t: np.array(
+                [
+                    tuple(edge)
+                    for edge in G.edges
+                    if (
+                        (G.edges[edge]["built_in"] == t) & (G.edges[edge]["built"] == 0)
+                    )
+                ],
+                dtype=object,
+            )
+            for t in TIMESTAMPS
+        }
+        for end_folder, pos in zip(END_FOLDERS, [0, 1, -1]):
+            gdf_time_edges = init_gdf(gdf_edges, end_folder)
+            G_time = mp.gdf_to_nx(
+                gdf_time_edges, integer_labels=False, preserve_index=True
+            )
+            folder_save = FOLDEROOT + end_folder + "/"
+            if not os.path.exists(folder_save):
+                os.makedirs(folder_save)
+            for i in range(NUM_RAND_REAL_TRIAL):
+                foldername = (
+                    folder_save + f"bs_{buffer_size}_real_random/real_random_{i:03}/"
+                )
+                if os.path.exists(foldername) and not RECOMPUTE:
+                    pass
+                else:
+                    if not os.path.exists(foldername):
+                        os.makedirs(foldername)
+                    order_growth = [
+                        tuple(val)
+                        for arr in [
+                            rng.permutation(edges_t[t]) for t in TIMESTAMPS[pos:]
+                        ]
+                        for val in arr
+                    ]
+                    met_dict = compute_metrics(G_time, order_growth, buffer_size)
+                    with open(foldername + "order_growth.json", "w") as f:
+                        json.dump(order_growth, f)
+                    with open(foldername + "metrics_growth.json", "w") as f:
+                        json.dump(met_dict, f)
 
 
 def compute_metrics(G, order_growth, buff_size):

@@ -8,7 +8,7 @@ import os
 import geopandas as gpd
 import momepy as mp
 import networkx as nx
-from G_grow_bikenet import END_FOLDERS, FOLDEROOT
+from Ga_grow_bikenet import END_FOLDERS, FOLDEROOT
 
 from paris_orderbike.metrics import coverage, directness
 

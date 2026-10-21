@@ -10,15 +10,15 @@ import matplotlib.pyplot as plt
 import momepy as mp
 import networkx as nx
 import numpy as np
-from G_grow_bikenet import FOLDEROOT
-from K_plot_lineplot_covdir_merged_2021 import FOLDERPLOT
+from Ga_grow_bikenet import FOLDEROOT
+from Ka_plot_lineplot_covdir_merged_2021_main import FOLDERPLOT_MAIN
 
 BUFF_SIZE = 400
 GROWTH_STRATEGIES = {
     "coverage": "Coverage",
-    "road_hierarchy_coverage": "Hierarchy,\ncoverage",
+    "road_hierarchy_coverage": "Hierarchy-\ncoverage",
     "dual_betweenness": "Dual\nbetweenness",
-    "road_hierarchy_directness": "Hierarchy,\ndirectness",
+    "road_hierarchy_directness": "Hierarchy-\ndirectness",
     "directness": "Directness",
 }
 FIGSIZE = [11.69, 8.27]
@@ -226,7 +226,7 @@ def main():
     fig.tight_layout()
     filename = "Growth_steps_pareto.png"
     fig.savefig(
-        FOLDERPLOT + filename,
+        FOLDERPLOT_MAIN + filename,
         bbox_inches="tight",
         pad_inches=0.01,
     )

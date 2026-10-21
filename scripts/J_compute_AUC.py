@@ -5,7 +5,7 @@ Script to compute the Area Under the Curve of all metrics for all strategies for
 import json
 
 import pandas as pd
-from G_grow_bikenet import (
+from Ga_grow_bikenet import (
     END_FOLDERS,
     FOLDEROOT,
     NUM_COV_TRIAL,
@@ -36,9 +36,18 @@ EXP_GAP = 10
 def main():
     for exp_disc in [
         True,
-        # False,
+        False,
     ]:
-        for buffer_size in [100, 200, 300, 400, 500, 600, 700, 800]:
+        for buffer_size in [
+            # 100,
+            # 200,
+            # 300,
+            400,
+            # 500,
+            # 600,
+            # 700,
+            # 800
+        ]:
             for end_folder in END_FOLDERS:
                 folder_data = FOLDEROOT + end_folder + "/"
                 aucs = []
