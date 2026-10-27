@@ -50,6 +50,17 @@ class Orderbike:
         self.xx = 0
         self.num_cc = 0
         self.length_lcc = 0
+        self.stages = []
+        self.next_stage_xx = 0
+        self.next_stage_cc = 0
+        self.relaxed_valid_edges = [
+            edge
+            for edge in self.G.edges
+            if not (
+                (not any(node in self.G_actual for node in edge[:2]))
+                or edge in self.G_actual.edges
+            )
+        ]
         self.metrics_dict = {
             "xx": [],
             "directness": [],
@@ -58,6 +69,11 @@ class Orderbike:
             "length_lcc": [],
         }
         self._compute_metrics()
+        self._find_next_stage()
+        if self.num_cc < self.next_stage_cc:
+            self.relaxed = True
+        else:
+            self.relaxed = False
         self.growth_order = []
         self.edges_tested = []
         self.values_found = []
@@ -116,6 +132,11 @@ class Orderbike:
                 "main_func": self.main_random,
                 "upda_func": None,
                 "type_func": "static",
+            },
+            "random_relaxed": {
+                "main_func": self.main_random_relaxed,
+                "upda_func": self.upda_random_relaxed,
+                "type_func": "dynamic",
             },
         }
 
@@ -182,6 +203,26 @@ class Orderbike:
         self.metrics_dict["xx"].append(self.xx)
         self.metrics_dict["num_cc"].append(self.num_cc)
         self.metrics_dict["length_lcc"].append(self.length_lcc)
+
+    def _find_next_stage(self):
+        if "built_in" in self.gdf_edges.columns:
+            if len(self.stages) < 1:
+                timestamps = sorted(set(self.gdf_edges["built_in"].values))
+                for i in range(len(timestamps)):
+                    gdf_filt = self.gdf_edges[
+                        self.gdf_edges["built_in"].isin(timestamps[: i + 1])
+                    ]
+                    G_filt = mp.gdf_to_nx(gdf_filt)
+                    self.stages.append(
+                        [
+                            sum([G_filt.edges[e]["length"] for e in G_filt.edges]),
+                            nx.number_connected_components(G_filt),
+                        ]
+                    )
+            # https://stackoverflow.com/questions/2236906/first-python-list-index-greater-than-x
+            index = next(x[0] for x in enumerate(self.stages) if x[1][0] > self.xx)
+            self.next_stage_xx = self.stages[index][0]
+            self.next_stage_cc = self.stages[index][1]
 
     def grow(self):
         "Grow the network."
@@ -462,3 +503,31 @@ class Orderbike:
 
     def main_random(self):
         return {key: 0 for key in list(self.G.edges)}
+
+    def main_random_relaxed(self):
+        if self.relaxed:
+            return 0
+        else:
+            if self.edges_tested[-1] not in self.relaxed_valid_edges:
+                return 0
+            return 1
+
+    def upda_random_relaxed(self):
+        if self.keep_connected:
+            raise ValueError(
+                "Growth need to be disconnected for the random relaxed strategy."
+            )
+        self.relaxed_valid_edges = [
+            edge
+            for edge in self.G.edges
+            if not (
+                (not any(node in self.G_actual for node in edge[:2]))
+                or edge in self.G_actual.edges
+            )
+        ]
+        if self.xx >= self.next_stage_xx and self.xx < self.stages[-1][0]:
+            self._find_next_stage()
+        if self.num_cc < self.next_stage_cc:
+            self.relaxed = True
+        else:
+            self.relaxed = False

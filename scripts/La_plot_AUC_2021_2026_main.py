@@ -25,6 +25,8 @@ PARAMS_DICT = {
         "road_hierarchy_coverage",
         "road_hierarchy_directness",
         "random",
+        "random_disconnected",
+        "random_relaxed",
         "real_random",
     ],
     "label": [
@@ -38,6 +40,8 @@ PARAMS_DICT = {
         "Hierarchy-coverage",
         "Hierarchy-directness",
         "Random",
+        "Random-disconnected",
+        "Random-relaxed",
         "Empirical",
     ],
     "color": [
@@ -51,11 +55,13 @@ PARAMS_DICT = {
         "#46afe8",
         "#ea914d",
         "#949494",
+        "pink",
+        "brown",
         "black",
     ],
-    "marker": ["D", "s", "h", "P", "p", "X", "d", "d", "d", "o", "*"],
-    "alpha": [0.65, 1, 1, 1, 1, 1, 0.3, 1, 1, 0.3, 1],
-    "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 200],
+    "marker": ["D", "s", "h", "P", "p", "X", "d", "d", "d", "o", "D", "P", "*"],
+    "alpha": [0.65, 1, 1, 1, 1, 1, 0.3, 1, 1, 0.3, 0.3, 0.3, 1],
+    "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 40, 40, 200],
     "figsize": [11.69, 8.27],
     "errorbar_random": {"elinewidth": 1, "color": "#D0D0D0", "markersize": 6},
     "errorbar_hierarchy": {"elinewidth": 1, "color": "#D0D0D0"},
@@ -80,9 +86,14 @@ PARAMS_DICT = {
     },
 }
 BUFFER_SIZE = 400
+# PLOT_LIMS_DICT = {
+#     "default": [[[0.55, 0.79], [0.39, 0.95]], [[0.68, 0.84], [0.39, 0.95]], 0.1],
+#     "exp": [[[0.17, 0.3], [0.085, 0.335]], [[0.24, 0.32], [0.085, 0.335]], 0.05],
+# }
+# With random disconnected and relaxed
 PLOT_LIMS_DICT = {
-    "default": [[[0.55, 0.79], [0.39, 0.95]], [[0.68, 0.84], [0.39, 0.95]], 0.1],
-    "exp": [[[0.17, 0.3], [0.085, 0.335]], [[0.24, 0.32], [0.085, 0.335]], 0.05],
+    "default": [[[0.5, 0.79], [0.39, 0.95]], [[0.68, 0.84], [0.39, 0.95]], 0.1],
+    "exp": [[[0.15, 0.3], [0.085, 0.335]], [[0.24, 0.32], [0.085, 0.335]], 0.05],
 }
 EXP_GAP = 10
 
@@ -120,7 +131,12 @@ def main():
             df_growth = df_growth.drop([2027])
             for ids, met in enumerate(PARAMS_DICT["order"]):
                 mask_met = df_growth["Metric optimized"] == met
-                if met in ["random", "road_hierarchy"]:
+                if met in [
+                    "random",
+                    "random_disconnected",
+                    "random_relaxed",
+                    "road_hierarchy",
+                ]:
                     zorder = 2
                 elif met == "real":
                     zorder = 4
@@ -145,7 +161,7 @@ def main():
                         ]
                     },
                 )
-                if met == "random":
+                if met in ["random", "random_disconnected", "random_relaxed"]:
                     xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
                     xx_std = df_growth[mask_met]["AUC of Directness"].std()
                     yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()

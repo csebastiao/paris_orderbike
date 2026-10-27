@@ -10,6 +10,7 @@ FOLDER_OUT = "./data/processed/"
 
 
 def main():
+    gdf_bikenet = gpd.read_file(FOLDER_OUT + "bikenet_edges.gpkg")
     df_iris_pop = pd.read_csv(
         FOLDER_IN + "IRIS_population_2021/base-ic-evol-struct-pop-2021.CSV",
         delimiter=";",
@@ -25,7 +26,7 @@ def main():
     gdf_psc_iris = gdf_iris[gdf_iris["dep"].isin(["75", "92", "93", "94"])]
     gdf_psc_iris = gdf_psc_iris[["CODE_IRIS", "geometry"]]
     gdf_psc_iris = gdf_psc_iris.merge(df_iris_pop, on="CODE_IRIS")
-    gdf_psc_iris = gdf_psc_iris.to_crs(gdf_psc_iris.estimate_utm_crs())
+    gdf_psc_iris = gdf_psc_iris.to_crs(gdf_bikenet.crs)
     gdf_psc_iris["arrondissement"] = gdf_psc_iris["CODE_IRIS"].apply(
         lambda x: int(x[3:5]) if x[:2] == "75" else 99
     )
@@ -48,7 +49,7 @@ def main():
         by="arrondissement",
         aggfunc={"pop": "sum"},
     )
-    gdf_arr = gdf_arr.to_crs(gdf_arr.estimate_utm_crs())
+    gdf_arr = gdf_arr.to_crs(gdf_bikenet.crs)
     gdf_arr["area"] = gdf_arr.geometry.area / 10**6
     # Remove parks from area of the  and 12th arrondissements
     gdf_arr.loc[12, "area"] -= gdf_psc_iris[

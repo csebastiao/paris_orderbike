@@ -29,6 +29,9 @@ METRIC_LIST = [
     "road_hierarchy_directness",
     "real",
     "real_random",
+    # Only for 400
+    "random_disconnected",
+    "random_relaxed",
 ]
 EXP_GAP = 10
 
@@ -55,11 +58,13 @@ def main():
                     foldermet = folder_data + f"bs_{buffer_size}_{met}/"
                     if met in [
                         "random",
+                        "random_disconnected",
+                        "random_relaxed",
                         "road_hierarchy",
                         "bikenet_hierarchy",
                         "coverage",
                     ]:
-                        if met == "random":
+                        if met in ["random", "random_disconnected", "random_relaxed"]:
                             num_step = NUM_RAND_TRIAL
                         elif met in ["road_hierarchy", "bikenet_hierarchy"]:
                             num_step = NUM_HIER_TRIAL

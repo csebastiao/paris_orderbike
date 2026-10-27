@@ -110,7 +110,6 @@ def main():
                     1,
                     figsize=PARAMS_DICT["figsize"],
                 )
-                ax.set_title(f"From {end_folder}", y=1.025, fontweight=700)
                 folder_data = FOLDEROOT + end_folder + "/"
                 savename = folder_data + f"/auc_table_growth_bs_{buffer_size}"
                 if exp_disc:
@@ -260,6 +259,7 @@ def main():
                 lgnd.legend_handles[-2]._sizes = [140]
                 fig.subplots_adjust(wspace=-0.3)
                 fig.savefig(savename_plot, bbox_inches="tight", pad_inches=0)
+                plt.close(fig=fig)
 
 
 def is_pareto_efficient(x, df, fdim, sdim):
