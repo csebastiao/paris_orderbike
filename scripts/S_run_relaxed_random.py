@@ -1,3 +1,5 @@
+"""Run relaxed random orders."""
+
 import json
 import os
 
