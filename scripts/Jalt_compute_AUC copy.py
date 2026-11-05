@@ -6,7 +6,6 @@ import json
 
 import pandas as pd
 from Ga_grow_bikenet import (
-    END_FOLDERS,
     FOLDEROOT,
     NUM_COV_TRIAL,
     NUM_HIER_TRIAL,
@@ -16,6 +15,11 @@ from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
 
 from paris_orderbike.utils import auc_from_metrics_dict
 
+END_FOLDERS = [
+    "2021",
+    # "2026",
+    # "Nothing",
+]
 METRIC_LIST = [
     "coverage",
     "directness",
@@ -84,6 +88,15 @@ def main():
                                 exp_gap=EXP_GAP,
                                 normalize_max_auc=False,
                             )
+                            auc_pop = auc_from_metrics_dict(
+                                met_dict,
+                                "pop",
+                                normalize_y=True,
+                                yaxis_method="natural",
+                                exp_discounting=exp_disc,
+                                exp_gap=EXP_GAP,
+                                normalize_max_auc=False,
+                            )
                             auc_dir = auc_from_metrics_dict(
                                 met_dict,
                                 "directness",
@@ -102,7 +115,7 @@ def main():
                                 exp_gap=EXP_GAP,
                                 normalize_max_auc=False,
                             )
-                            aucs.append([met, i, auc_cov, auc_dir, auc_gin])
+                            aucs.append([met, i, auc_cov, auc_pop, auc_dir, auc_gin])
                     elif met == "real_random":
                         df_concat = pd.DataFrame()
                         for i in range(NUM_RAND_REAL_TRIAL):
@@ -121,6 +134,15 @@ def main():
                             exp_gap=EXP_GAP,
                             normalize_max_auc=False,
                         )
+                        auc_pop = auc_from_metrics_dict(
+                            met_dict,
+                            "pop",
+                            normalize_y=True,
+                            yaxis_method="natural",
+                            exp_discounting=exp_disc,
+                            exp_gap=EXP_GAP,
+                            normalize_max_auc=False,
+                        )
                         auc_dir = auc_from_metrics_dict(
                             met_real_random_dict,
                             "directness",
@@ -139,13 +161,22 @@ def main():
                             exp_gap=EXP_GAP,
                             normalize_max_auc=False,
                         )
-                        aucs.append([met, 0, auc_cov, auc_dir, auc_gin])
+                        aucs.append([met, 0, auc_cov, auc_pop, auc_dir, auc_gin])
                     else:
                         with open(foldermet + "metrics_growth.json", "r") as f:
                             met_dict = json.load(f)
                         auc_cov = auc_from_metrics_dict(
                             met_dict,
                             "coverage",
+                            normalize_y=True,
+                            yaxis_method="natural",
+                            exp_discounting=exp_disc,
+                            exp_gap=EXP_GAP,
+                            normalize_max_auc=False,
+                        )
+                        auc_pop = auc_from_metrics_dict(
+                            met_dict,
+                            "pop",
                             normalize_y=True,
                             yaxis_method="natural",
                             exp_discounting=exp_disc,
@@ -170,7 +201,7 @@ def main():
                             exp_gap=EXP_GAP,
                             normalize_max_auc=False,
                         )
-                        aucs.append([met, 0, auc_cov, auc_dir, auc_gin])
+                        aucs.append([met, 0, auc_cov, auc_pop, auc_dir, auc_gin])
                     # Save everything as JSON with Pandas Dataframe
                     df_growth = pd.DataFrame(
                         aucs,
@@ -178,6 +209,7 @@ def main():
                             "Metric optimized",
                             "Trial",
                             "AUC of Coverage",
+                            "AUC of Population",
                             "AUC of Directness",
                             "AUC of Gini",
                         ],
