@@ -24,9 +24,9 @@ PARAMS_DICT = {
     ],
     "color": [
         "#949494",
-        "pink",
-        "brown",
-        "#B0B0B0",
+        "#ED2800",
+        "#965B54",
+        "black",
     ],
     "figsize": [11.69, 8.27],
     "rcparams": {
@@ -49,7 +49,6 @@ PARAMS_DICT = {
 }
 
 
-# TODO harmonize values with other plots
 def main():
     for key in PARAMS_DICT["rcparams"]:
         mpl.rcParams[key] = PARAMS_DICT["rcparams"][key]
@@ -77,7 +76,17 @@ def main():
             xx.append(df["xx"].values)
         num_cc = np.mean(np.transpose(num_cc), axis=1)
         xx = np.mean(np.transpose(xx), axis=1)
-        ax.plot(xx / 10**3, num_cc, color=color, label=metname, linewidth=3)
+        if met == "real_random":
+            ax.plot(
+                xx / 10**3,
+                num_cc,
+                color=color,
+                label=metname,
+                linewidth=2,
+                linestyle="dashed",
+            )
+        else:
+            ax.plot(xx / 10**3, num_cc, color=color, label=metname, linewidth=2)
     ax.set_xlabel("Built length (km)")
     ax.set_ylabel("Number of components")
     ax.legend()

@@ -55,11 +55,11 @@ PARAMS_DICT = {
         "#46afe8",
         "#ea914d",
         "#949494",
-        "pink",
-        "brown",
+        "#ED2800",
+        "#965B54",
         "black",
     ],
-    "marker": ["D", "s", "h", "P", "p", "X", "d", "d", "d", "o", "D", "P", "*"],
+    "marker": ["D", "s", "h", "P", "p", "X", "d", "d", "d", "o", "o", "o", "*"],
     "alpha": [0.65, 1, 1, 1, 1, 1, 0.3, 1, 1, 0.3, 0.3, 0.3, 1],
     "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 40, 40, 200],
     "figsize": [11.69, 8.27],
@@ -142,43 +142,49 @@ def main():
                     zorder = 4
                 else:
                     zorder = 3
-                ax.scatter(
-                    df_growth[mask_met]["AUC of Directness"],
-                    df_growth[mask_met]["AUC of Coverage"],
-                    linewidths=0,
-                    zorder=zorder,
-                    **{
-                        key: val[ids]
-                        for key, val in PARAMS_DICT.items()
-                        if key
-                        not in [
-                            "dpi",
-                            "figsize",
-                            "rcparams",
-                            "order",
-                            "errorbar_random",
-                            "errorbar_hierarchy",
-                        ]
-                    },
-                )
-                if met in ["random", "random_disconnected", "random_relaxed"]:
-                    xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
-                    xx_std = df_growth[mask_met]["AUC of Directness"].std()
-                    yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
-                    yy_std = df_growth[mask_met]["AUC of Coverage"].std()
-                    ax.errorbar(
-                        x=xx_mean,
-                        y=yy_mean,
-                        yerr=yy_std,
-                        xerr=xx_std,
-                        fmt="None",
-                        capsize=2,
+                if (met == "random_relaxed") & (end_folder == "2026"):
+                    pass
+                else:
+                    ax.scatter(
+                        df_growth[mask_met]["AUC of Directness"],
+                        df_growth[mask_met]["AUC of Coverage"],
+                        linewidths=0,
+                        zorder=zorder,
                         **{
-                            key: val
-                            for key, val in PARAMS_DICT["errorbar_random"].items()
+                            key: val[ids]
+                            for key, val in PARAMS_DICT.items()
+                            if key
+                            not in [
+                                "dpi",
+                                "figsize",
+                                "rcparams",
+                                "order",
+                                "errorbar_random",
+                                "errorbar_hierarchy",
+                            ]
                         },
-                        zorder=3,
                     )
+                if met in ["random", "random_disconnected", "random_relaxed"]:
+                    if (met == "random_relaxed") & (end_folder == "2026"):
+                        pass
+                    else:
+                        xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
+                        xx_std = df_growth[mask_met]["AUC of Directness"].std()
+                        yy_mean = df_growth[mask_met]["AUC of Coverage"].mean()
+                        yy_std = df_growth[mask_met]["AUC of Coverage"].std()
+                        ax.errorbar(
+                            x=xx_mean,
+                            y=yy_mean,
+                            yerr=yy_std,
+                            xerr=xx_std,
+                            fmt="None",
+                            capsize=2,
+                            **{
+                                key: val
+                                for key, val in PARAMS_DICT["errorbar_random"].items()
+                            },
+                            zorder=3,
+                        )
                 elif met == "road_hierarchy":
                     xx_mean = df_growth[mask_met]["AUC of Directness"].mean()
                     xx_std = df_growth[mask_met]["AUC of Directness"].std()
@@ -248,7 +254,7 @@ def main():
                 aspect="equal",
                 adjustable="box",
             )
-        handles, labels = plt.gca().get_legend_handles_labels()
+        handles, labels = axs[0].get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         lgnd = fig.legend(
             by_label.values(),

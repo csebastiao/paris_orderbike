@@ -30,6 +30,9 @@ PARAMS_DICT = {
         "dual_betweenness",
         "road_hierarchy_coverage",
         "road_hierarchy_directness",
+        "random",
+        "random_disconnected",
+        "random_relaxed",
         "real",
         "real_random",
     ],
@@ -39,6 +42,9 @@ PARAMS_DICT = {
         "Dual betweenness",
         "Hierarchy-coverage",
         "Hierarchy-directness",
+        "Random",
+        "Random-disconnected",
+        "Random-relaxed",
         "Empirical",
         "Empirical",
     ],
@@ -48,8 +54,11 @@ PARAMS_DICT = {
         "#017856",
         "#46afe8",
         "#ea914d",
+        "#949494",
+        "#ED2800",
+        "#965B54",
         "black",
-        "#B0B0B0",
+        "black",
     ],
     "figsize": [11.69 * 2, 8.27],
     "rcparams": {
@@ -78,18 +87,15 @@ def main():
     folder_data = FOLDEROOT + "2021/"
     avg = {}
     df_concat = pd.DataFrame()
-    for i in range(NUM_RAND_TRIAL):
-        df = pd.read_json(
-            folder_data + f"bs_{BUFFER_SIZE}_random/random_{i:03}/metrics_growth.json"
-        )
-        df_concat = pd.concat([df_concat, df])
-    random_df = pd.DataFrame(average_x(df_concat))
     for met in PARAMS_DICT["order"]:
         foldermet = folder_data + f"bs_{BUFFER_SIZE}_{met}/"
         if met in [
             "road_hierarchy",
             "coverage",
             "real_random",
+            "random",
+            "random_disconnected",
+            "random_relaxed",
         ]:
             df_concat = pd.DataFrame()
             if met in ["road_hierarchy", "bikenet_hierarchy"]:
@@ -98,6 +104,8 @@ def main():
                 num_step = NUM_COV_TRIAL
             elif met in ["real_random"]:
                 num_step = NUM_RAND_REAL_TRIAL
+            elif met in ["random", "random_disconnected", "random_relaxed"]:
+                num_step = NUM_RAND_TRIAL
             for i in range(num_step):
                 df = pd.read_json(foldermet + f"{met}_{i:03}/metrics_growth.json")
                 df_concat = pd.concat([df_concat, df])
@@ -120,7 +128,12 @@ def main():
             df = avg[met]
             if met == "real":
                 zorder = 4
-            elif met == "real_random":
+            elif met in [
+                "real_random",
+                "random",
+                "random_disconnected",
+                "random_relaxed",
+            ]:
                 zorder = 2
             else:
                 zorder = 3
@@ -152,7 +165,7 @@ def main():
                 )
                 if idx == 1:
                     for time, i, offset in zip(
-                        ("2021", "2026"), (0, -2), ((0, -40), (30, -30))
+                        ("2021", "2026"), (0, -2), ((0, -40), (-10, 40))
                     ):
                         ax.annotate(
                             time,
@@ -194,21 +207,13 @@ def main():
                     },
                 )
         xlims = ax.get_xlim()
-        ax.plot(
-            random_df["xx"] / 10**3,
-            random_df[met_plot] / ratio,
-            linewidth=LINEWIDTH,
-            color="#949494",
-            label="Random",
-            zorder=2,
-        )
         ax.set_xlim(xlims)
         ax.set_xlabel(
             "Built length ($km$)", fontsize=PARAMS_DICT["rcparams"]["font.size"]
         )
         ax.set_axisbelow(True)
     fig.tight_layout()
-    axs[1].legend(fontsize=PARAMS_DICT["rcparams"]["font.size"] * 0.75)
+    axs[1].legend(fontsize=PARAMS_DICT["rcparams"]["font.size"] * 0.66)
     fig.savefig(
         FOLDERPLOT_MAIN + f"/2021_lineplot_merged_bs_{BUFFER_SIZE}.png", pad_inches=0.05
     )
