@@ -1,6 +1,6 @@
 [project]
-authors = [{name = "Clement Sebastiao", email = "clement.sebastiao@gmail.com"}]
-dependencies = ["matplotlib-map-utils>=4.1.1,<5"]
+authors = [{name = "Clement Sebastiao", email = "clement.sebastiao@protonmail.com"}]
+dependencies = []
 name = "paris_orderbike"
 requires-python = ">= 3.11"
 version = "0.1.0"
@@ -10,8 +10,8 @@ build-backend = "hatchling.build"
 requires = ["hatchling"]
 
 [tool.pixi.workspace]
-channels = ["conda-forge"]
-platforms = ["osx-64"]
+channels = ['conda-forge']
+platforms = ['osx-arm64']
 
 [tool.pixi.pypi-dependencies]
 paris_orderbike = { path = ".", editable = true }
@@ -19,9 +19,9 @@ paris_orderbike = { path = ".", editable = true }
 [tool.pixi.tasks]
 
 [tool.pixi.dependencies]
-osmnx = ">=2.1.1,<3"
+osmnx = ">=2.2.0,<3"
 momepy = ">=1.0.0,<2"
 neatnet = ">=0.1.6,<0.2"
 jupyter = ">=1.1.1,<2"
-pre-commit = ">=4.6.2,<5"
+pre-commit = ">=4.7.0,<5"
 python-igraph = ">=1.0.0,<2"

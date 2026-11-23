@@ -14,8 +14,8 @@ from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
 from J_compute_AUC import average_x
 from matplotlib import pyplot as plt
 
-MARKERSIZE = 200
-MARKERSIZE_IMPORTANT = 800
+MARKERSIZE = 300
+MARKERSIZE_IMPORTANT = 900
 LINEWIDTH = 3
 BUFFER_SIZE = 400
 FOLDERPLOT_MAIN = "./plots/article_main/"
@@ -31,7 +31,6 @@ PARAMS_DICT = {
         "road_hierarchy_coverage",
         "road_hierarchy_directness",
         "random",
-        "random_disconnected",
         "random_relaxed",
         "real",
         "real_random",
@@ -43,8 +42,7 @@ PARAMS_DICT = {
         "Hierarchy-coverage",
         "Hierarchy-directness",
         "Random",
-        "Random-disconnected",
-        "Random-relaxed",
+        "Random-semiconnected",
         "Empirical",
         "Empirical",
     ],
@@ -55,7 +53,6 @@ PARAMS_DICT = {
         "#46afe8",
         "#ea914d",
         "#949494",
-        "#ED2800",
         "#965B54",
         "black",
         "black",
