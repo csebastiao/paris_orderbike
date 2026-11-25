@@ -56,8 +56,8 @@ PARAMS_DICT = {
         "black",
     ],
     "marker": ["D", "s", "h", "P", "p", "X", "d", "d", "d", "o", "*"],
-    "alpha": [0.65, 1, 1, 1, 1, 1, 0.3, 1, 1, 0.3, 1],
-    "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 200],
+    "alpha": [0.75, 1, 1, 1, 1, 1, 0.5, 1, 1, 0.5, 1],
+    "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 400],
     "figsize": [8.27, 8.27],
     "errorbar_random": {"elinewidth": 1, "color": "#D0D0D0", "markersize": 6},
     "errorbar_hierarchy": {"elinewidth": 1, "color": "#D0D0D0"},
@@ -207,6 +207,7 @@ def main():
                             color="green",
                             alpha=0.1,
                             zorder=0,
+                            label="Strong Pareto\nimprovement",
                         )
                         ax.add_patch(rect)
                 ax.set_xlabel("AUC of directness")
@@ -228,7 +229,7 @@ def main():
                         axis=1,
                     )
                 ]
-                parfront.sort_values("AUC of Directness", axis=0, inplace=True)
+                parfront = parfront.sort_values("AUC of Directness", axis=0)
                 ax.plot(
                     parfront["AUC of Directness"],
                     parfront["AUC of Coverage"],
@@ -248,16 +249,17 @@ def main():
                     by_label.values(),
                     by_label.keys(),
                     loc="outside upper center",
-                    prop={"size": PARAMS_DICT["rcparams"]["font.size"] * 0.9},
+                    bbox_to_anchor=(0.48, 1.035),
+                    prop={"size": PARAMS_DICT["rcparams"]["font.size"] * 0.85},
                     labelspacing=0.5,
                     ncol=4,
                 )
                 for handle in lgnd.legend_handles:
                     handle._alpha = 1
-                for handle in lgnd.legend_handles[:-2]:
+                lgnd.legend_handles[-2]._alpha = 0.2
+                for handle in lgnd.legend_handles[:-3]:
                     handle._sizes = [80]
-                lgnd.legend_handles[-2]._sizes = [140]
-                fig.subplots_adjust(wspace=-0.3)
+                lgnd.legend_handles[-3]._sizes = [140]
                 fig.savefig(savename_plot, bbox_inches="tight", pad_inches=0)
                 plt.close(fig=fig)
 

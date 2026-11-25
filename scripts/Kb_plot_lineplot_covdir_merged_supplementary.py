@@ -15,8 +15,8 @@ from I_grow_random_real_bikenet import NUM_RAND_REAL_TRIAL
 from J_compute_AUC import average_x
 from matplotlib import pyplot as plt
 
-MARKERSIZE = 200
-MARKERSIZE_IMPORTANT = 800
+MARKERSIZE = 300
+MARKERSIZE_IMPORTANT = 900
 LINEWIDTH = 3
 FOLDERPLOT_SUPP = "./plots/article_supplementary/"
 MET_PLOT = {

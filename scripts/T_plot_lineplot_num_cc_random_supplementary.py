@@ -19,7 +19,7 @@ PARAMS_DICT = {
     "label": [
         "Random",
         "Random-disconnected",
-        "Random-relaxed",
+        "Random-semiconnected",
         "Empirical",
     ],
     "color": [

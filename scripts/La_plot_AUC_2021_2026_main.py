@@ -223,7 +223,7 @@ def main():
                     axis=1,
                 )
             ]
-            parfront.sort_values("AUC of Directness", axis=0, inplace=True)
+            parfront = parfront.sort_values("AUC of Directness", axis=0)
             ax.plot(
                 parfront["AUC of Directness"],
                 parfront["AUC of Coverage"],
