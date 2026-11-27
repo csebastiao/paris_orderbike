@@ -57,7 +57,7 @@ PARAMS_DICT = {
         "black",
         "black",
     ],
-    "figsize": [11.69 * 2, 8.27],
+    "figsize": [11.69 * 2, 11.69],
     "rcparams": {
         "font.size": 30,
         "font.family": "sans-serif",
@@ -162,7 +162,7 @@ def main():
                 )
                 if idx == 1:
                     for time, i, offset in zip(
-                        ("2021", "2026"), (0, -2), ((0, -40), (-10, 40))
+                        ("2021", "2026"), (0, -2), ((0, -40), (-5, 30))
                     ):
                         ax.annotate(
                             time,
@@ -209,8 +209,9 @@ def main():
             "Built length ($km$)", fontsize=PARAMS_DICT["rcparams"]["font.size"]
         )
         ax.set_axisbelow(True)
+    axs[0].set_yticks(range(72, 92, 4))
     fig.tight_layout()
-    axs[1].legend(fontsize=PARAMS_DICT["rcparams"]["font.size"] * 0.66)
+    axs[1].legend(fontsize=PARAMS_DICT["rcparams"]["font.size"] * 0.8)
     fig.savefig(
         FOLDERPLOT_MAIN + f"/2021_lineplot_merged_bs_{BUFFER_SIZE}.png", pad_inches=0.05
     )

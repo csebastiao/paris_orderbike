@@ -104,6 +104,7 @@ def main():
                     capstyle="round",
                     joinstyle="round",
                 )
+                ax.set_xlabel("")
             else:
                 H = G.edge_subgraph(order_growth[: idx_stage_bef + 2] + init_edge)
                 temp_gdf_edges = mp.nx_to_gdf(H, points=False, lines=True)
@@ -125,6 +126,8 @@ def main():
                     capstyle="round",
                     joinstyle="round",
                 )
+                ax.set_xlabel("")
+                ax.set_ylabel("")
             idx_stage_bef = idx_stage
             ax.set_xlim([bb[0], bb[2]])
             ax.set_ylim([bb[1], bb[3]])
@@ -153,6 +156,8 @@ def main():
             capstyle="round",
             joinstyle="round",
         )
+        ax.set_xlabel("")
+        ax.set_ylabel("")
     axs[-1][0].set_ylabel("Empirical", labelpad=LABEL_PAD, multialignment="center")
     gdf_edges[gdf_edges["built_in"] == "2021-01-01"].plot(
         ax=axs[-1][0], color="white", capstyle="round", joinstyle="round"
@@ -182,6 +187,7 @@ def main():
         "Missing 100 km",
         fontsize=PARAMS_DICT["rcparams"]["font.size"] * 1.3,
         fontweight=700,
+        y=1.1,
     )
     ax = axs[-1][3]
     ax.set_xlim([bb[0], bb[2]])
@@ -196,6 +202,8 @@ def main():
         capstyle="round",
         joinstyle="round",
     )
+    ax.set_xlabel("")
+    ax.set_ylabel("")
     for i in range(len(stages)):
         ax = axs[-1][i]
         ax.set_xlim([bb[0], bb[2]])
@@ -203,11 +211,17 @@ def main():
         ax.spines[:].set_visible(False)
         ax.set_xticks([])
         ax.set_yticks([])
+        if i > 0:
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+        else:
+            ax.set_xlabel("")
     for idx_sta, stage in enumerate(stages):
         axs[0][idx_sta].set_title(
             f"{stage} km",
             fontsize=PARAMS_DICT["rcparams"]["font.size"] * 1.3,
             fontweight=700,
+            y=1.1,
         )
         if stage == 124:
             axs[-1][idx_sta].set_xlabel(

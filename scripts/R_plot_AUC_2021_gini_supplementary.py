@@ -37,7 +37,7 @@ PARAMS_DICT = {
         "Hierarchy-directness",
         "Random",
         "Random-disconnected",
-        "Random-relaxed",
+        "Random-semiconnected",
         "Empirical",
     ],
     "color": [
@@ -51,13 +51,14 @@ PARAMS_DICT = {
         "#46afe8",
         "#ea914d",
         "#949494",
-        "pink",
-        "brown",
+        "#ED2800",
+        "#965B54",
         "black",
     ],
     "marker": ["D", "s", "h", "P", "p", "X", "d", "d", "d", "o", "D", "P", "*"],
-    "alpha": [0.65, 1, 1, 1, 1, 1, 0.3, 1, 1, 0.3, 0.3, 0.3, 1],
-    "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 40, 40, 200],
+    "alpha": [0.75, 1, 1, 1, 1, 1, 0.5, 1, 1, 0.5, 0.5, 0.5, 1],
+    "zorder": [6, 6, 6, 6, 6, 6, 5, 6, 6, 2, 3, 4, 7],
+    "s": [70, 70, 70, 70, 70, 70, 40, 120, 120, 40, 40, 40, 400],
     "figsize": [11.69, 8.27],
     "errorbar_random": {"elinewidth": 1, "color": "#D0D0D0", "markersize": 6},
     "errorbar_hierarchy": {"elinewidth": 1, "color": "#D0D0D0"},
@@ -98,7 +99,7 @@ def main():
         )
         savename_plot = (
             FOLDERPLOT_SUPP
-            + f"AUC_gini_2021_2026_bs_{BUFFER_SIZE}_{'_'.join(auc_label.split(' '))}.png"
+            + f"AUC_gini_2021_bs_{BUFFER_SIZE}_{'_'.join(auc_label.split(' '))}.png"
         )
         folder_data = FOLDEROOT + "2021/"
         savename = folder_data + f"/auc_table_growth_bs_{BUFFER_SIZE}_alt"
@@ -108,22 +109,10 @@ def main():
         df_growth = df_growth.drop([2027])
         for ids, met in enumerate(PARAMS_DICT["order"]):
             mask_met = df_growth["Metric optimized"] == met
-            if met in [
-                "random",
-                "random_disconnected",
-                "random_relaxed",
-                "road_hierarchy",
-            ]:
-                zorder = 2
-            elif met == "real":
-                zorder = 4
-            else:
-                zorder = 3
             ax.scatter(
                 df_growth[mask_met][auc],
                 df_growth[mask_met]["AUC of Gini"],
                 linewidths=0,
-                zorder=zorder,
                 **{
                     key: val[ids]
                     for key, val in PARAMS_DICT.items()
@@ -151,7 +140,7 @@ def main():
                     fmt="None",
                     capsize=2,
                     **{key: val for key, val in PARAMS_DICT["errorbar_random"].items()},
-                    zorder=3,
+                    zorder=6,
                 )
             elif met == "road_hierarchy":
                 xx_mean = df_growth[mask_met][auc].mean()
@@ -169,7 +158,7 @@ def main():
                         key: val
                         for key, val in PARAMS_DICT["errorbar_hierarchy"].items()
                     },
-                    zorder=3,
+                    zorder=6,
                 )
             elif met == "real_random":
                 # Add Strong Pareto Improvment patch
@@ -184,6 +173,7 @@ def main():
                     color="green",
                     alpha=0.1,
                     zorder=0,
+                    label="Strong Pareto\nimprovement",
                 )
                 ax.add_patch(rect)
         ax.set_xlabel(auc_label)
@@ -225,9 +215,10 @@ def main():
         )
         for handle in lgnd.legend_handles:
             handle._alpha = 1
-        for handle in lgnd.legend_handles[:-2]:
+        lgnd.legend_handles[-2]._alpha = 0.2
+        for handle in lgnd.legend_handles[:-3]:
             handle._sizes = [80]
-        lgnd.legend_handles[-2]._sizes = [140]
+        lgnd.legend_handles[-3]._sizes = [140]
         fig.savefig(savename_plot, bbox_inches="tight", pad_inches=0)
 
 
